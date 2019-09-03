@@ -120,8 +120,7 @@ GetZScoresOfListOfGenes <- function(ListOfGenes, Measure) {
   ))
   
   # LEAVE THE +INF AND -INF UNTIL AFTER THE NORMALIZATION!!! THESE SHOULD ALWAYS BE 1 AND 0, RESPECTIVELY
-  
-  
+
   # normalizes z-scores to be in the range [0-1], ignoring +Inf and -Inf values
   ZScores <- 
     (ZScores - min(ZScores[which(is.finite(ZScores))])) / 
@@ -300,7 +299,7 @@ PickRandomRoot <- function (MyMultiplex) {
 
 
 # definition of the function to evaluate a whole population 
-# INPUTS: MyPopulation - population to evaluate (onlly the codes of the individuals)
+# INPUTS: MyPopulation - population to evaluate (only the codes of the individuals)
 #         Multiplex - network to which the population belongs to
 #         GenesWithZScores - Z-scores of the genes
 # OUTPUT: Evaluation of the individual (fitness)
@@ -905,39 +904,6 @@ Mutation <- function (Individuals, Multiplex) {
     
   }
   return(Mutants)
-}
-
-
-# definition of the function to get the list of neighbors of the biggest connected component of the subnetwork
-# formed by the given list of nodes, in the network given (a single layer)
-# INPUTS: Subnetwork - igraph object with a subnetwork 
-#         Network - igraph object with a single network (only one layer of the multiplex)
-# OUTPUT: List of nodes that are neighbors of the BCC of the subnetwork. 
-#         NOTE. This is a filtered list that does NOT include the list of original nodes, i.e., just new nodes
-GetNeighborsOfBCC <- function(Subnetwork, Network) {
-  # get the components of the subnetwork
-  ComponentsSubnetwork <- groups(components(Subnetwork))
-  
-  # get the genes that are in the biggest connected component
-  BiggestConnectedComponent <- unlist(ComponentsSubnetwork[which.max(lapply( ComponentsSubnetwork, function(X) {length(X)}))])
-  
-  # get IDs of the genes belonging to the BCC
-  BCC_IDs <- GetNetworkIDofListOfNodes(BiggestConnectedComponent, Network)
-  
-  ############# 22/08/2019 ----- I JUST FOUND A BUG HERE!!! THE FUNCTION neighbors TAKES ONLY ONE NODE AS SECOND ARGUMENT,
-  #############  THEREFORE, IN ORDER TO GET THE NEIGHBORS OF A LIST OF GENES, I NEED TO EITHER APPLY THE neighbors FUNCTION
-  #############  ON A LOOP OR WITH AN LAPPLY
-  
-  # # get neighbors of the biggest connected component
-  # CurrentNeighbors <- names(neighbors(Network, BCC_IDs))
-  
-  CurrentNeighbors <- names(unlist(lapply(BCC_IDs, function(X) {neighbors(Network, X) } )))
-  
-  # remove from the list of neighbors the nodes that belong to the BCC of the original subnetwork
-  CurrentNeighbors <- CurrentNeighbors[!CurrentNeighbors %in% BiggestConnectedComponent]
-  
-  # return filtered list of neighbors
-  return(CurrentNeighbors)
 }
 
 

@@ -879,19 +879,7 @@ Mutation <- function (Individuals, Multiplex) {
           
           # get the global ID of the chosen node
           NewNodeID <- GetNetworkIDofListOfNodes(RandomNode, Multiplex[[1]])
-          
-          # add new node to the individual
-          Individuals[[i]] <- c(MutatedIndividual, NewNodeID)
-          
-          # choose a node, randomly
-          RandomNodeID <- sample(1:length(MaxIncidences), 1)
-          
-          # get the name of the randomly chosen node
-          RandomNode <- names(MaxIncidences[RandomNodeID])
-          
-          # get the global ID of the chosen node
-          NewNodeID <- GetNetworkIDofListOfNodes(RandomNode, Multiplex[[1]])
-          
+         
           # add new node to the individual
           Individuals[[i]] <- c(Individuals[[i]], NewNodeID)
         } else {

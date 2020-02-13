@@ -7,7 +7,7 @@
 source('~/Doctorado/Code_files/MyGeneticAlgorithm/MyAlgorithm/MO_GA_MUN_PARALLEL_ALL_FUNCTIONS.R')
 
 library(doParallel)
-registerDoParallel(cores = 2) # should be in line with the number of physical processor cores
+registerDoParallel(cores = 1) # should be in line with the number of physical processor cores
 
 # in order to make the random functions NOT random at all
 # for the purpose of benchmarking, comparing the reproducibility of results, etc.
@@ -24,7 +24,7 @@ MaxNumberOfAttempts <- 3 # this is used to find compatible parents and to create
 Measure <- "FDR" # determines how to get the DE genes, either by 'PValue' or 'FDR'
 
 ExperimentToRun <- 5
-NumberOfRunsToExecute <- 2
+NumberOfRunsToExecute <- 1
 # NumberOfRunsToExecute <- 1
 
 
@@ -66,7 +66,7 @@ DE_results <- RemoveDuplicates_DE_Results(DE_results)
 # get list of differentially expressed genes
 DifferentiallyExpressedGenes <- 
   DE_results[ abs(DE_results$logFC) > 1 & 
-                DE_results[[Measure]] < ThresholdSignificantlyDEGenes, ]
+                DE_results$FDR < ThresholdSignificantlyDEGenes, ]
 
 
 # SET TO NULL WHEN NO Z-SCORE HAS BEEN CALCULATED
@@ -173,8 +173,6 @@ for (CrossoverRate in CrossoverRates) {
       
       # evolution's loop for a given number of generations or untill all the individuals are in the first Pareto front
       while (g <= Generations && !all(Population$Rank == 1)) {
-        BestDensityBefore <- max(Population$Density)
-        
         MyNewPopulation <- vector("list", PopSize) # initialize an empty vector of the population size
           
         # loop to generate the new population. In each loop, 2 children are created
@@ -283,10 +281,6 @@ for (CrossoverRate in CrossoverRates) {
         # ---------------------------------
         NewPopulationForReplacement <- Replacement(Parents = Population, Children = NewPopulation)
         
-        BestDensityAfter <- max(NewPopulationForReplacement$Density)
-        
-        stopifnot(BestDensityAfter >= BestDensityBefore)
-
         DiversityInPopulation$AfterReplacement[g] <- nrow(unique(NewPopulationForReplacement[, MyObjectiveNames]))
         
         # replace old population

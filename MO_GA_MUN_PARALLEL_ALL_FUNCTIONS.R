@@ -360,6 +360,7 @@ EvaluateIndividualAndReturnAllFitnessData <- function (Individual, MultiplexNetw
     Fitness <- AverageZScore
     
     SumDensityAllLayers <- 0
+#    DensityAllLayers <- 1
     
     # loop through all the layers in the multiplex
     for (layer in 1:length(MultiplexNetwork)) {
@@ -369,11 +370,15 @@ EvaluateIndividualAndReturnAllFitnessData <- function (Individual, MultiplexNetw
       # calculate the density of the subnetwork corresponding to the individual, in the current layer
       SubnetworkDensity <- ifelse(!is.nan(graph.density(Subnetwork)), graph.density(Subnetwork), 0) 
       
-      # normalize the subnetwork's density with respect to the density of the network in the current layer
+      # # normalize the subnetwork's density with respect to the density of the network in the current layer
       NormalizedDensity <- SubnetworkDensity / DensityPerLayerMultiplex[layer]
-      
-      # sum all the densities
+      # # sum all the densities
       SumDensityAllLayers <- SumDensityAllLayers + NormalizedDensity
+      
+      # new calculus of normalized density = 2 ^ (-(DensityPerLayerMultiplex[layer]/(SubnetworkDensity * length(MultiplexNetwork))))
+      #NormalizedDensity <- 2 ^ (-(DensityPerLayerMultiplex[layer]/(SubnetworkDensity * length(MultiplexNetwork)))) 
+      
+      #DensityAllLayers <- DensityAllLayers * NormalizedDensity
       
       # add the fitness of the current layer to the fitness of the individual
       Fitness <- Fitness * NormalizedDensity
@@ -383,6 +388,7 @@ EvaluateIndividualAndReturnAllFitnessData <- function (Individual, MultiplexNetw
   }
   
   Res <- data.frame(Fitness = Fitness, AverageZScore = AverageZScore, Density = SumDensityAllLayers)
+#  Res <- data.frame(Fitness = Fitness, AverageZScore = AverageZScore, Density = DensityAllLayers)
   
   return (Res)
 }
@@ -879,7 +885,7 @@ Mutation <- function (Individuals, Multiplex) {
           
           # get the global ID of the chosen node
           NewNodeID <- GetNetworkIDofListOfNodes(RandomNode, Multiplex[[1]])
-         
+          
           # add new node to the individual
           Individuals[[i]] <- c(Individuals[[i]], NewNodeID)
         } else {
@@ -889,7 +895,6 @@ Mutation <- function (Individuals, Multiplex) {
     } 
     # save the individual in the mutants' list
     Mutants[i] <- Individuals[i]
-    
   }
   return(Mutants)
 }
@@ -952,11 +957,7 @@ Replacement <- function (Parents, Children) {
 # INPUT:  CombinedPopulation - Population of size 2*N that corresponds to the union of parents and children
 # OUTPUT: A garanteed diverse population of size 2*N
 ReplaceDuplicatedIndividualsWithRandomOnes <- function(CombinedPopulation) {
-  # find duplicated individuals, considering the objective functions
-  IsDuplicated <- duplicated(CombinedPopulation[, colnames(CombinedPopulation) %in% MyObjectiveNames])
-  
-  # remove duplicated individuals from population
-  DiversePopulation <- CombinedPopulation[!IsDuplicated, ]
+  DiversePopulation <- CombinedPopulation
   
   #######################################################################
   ############## ---- BEGINS OPTIMIZATION OF CODE ---- ##################

@@ -1004,7 +1004,8 @@ ReplaceDuplicatedIndividualsWithRandomOnes <- function(CombinedPopulation) {
       if ( length(unique(PopulationWithCrowdingDistance[c(Ind1_ID, Ind2_ID), "Rank"])) == 1 & 
            unique(PopulationWithCrowdingDistance[c(Ind1_ID, Ind2_ID), "Rank"])[1] == 1 &
            length(unique(PopulationWithCrowdingDistance[c(Ind1_ID, Ind2_ID), "CrowdingDistance"])) == 1 &
-           is.infinite(unique(PopulationWithCrowdingDistance[c(Ind1_ID, Ind2_ID), "CrowdingDistance"])[1]) ) {
+           is.infinite(unique(PopulationWithCrowdingDistance[c(Ind1_ID, Ind2_ID), "CrowdingDistance"])[1]) &
+           Similarities$JS[i] < 100) {
         print("Individuals in first Pareto front very similar. Keeping both of them. Inf crowding distance.")
         
         print(PopulationWithCrowdingDistance[c(Ind1_ID, Ind2_ID), ])

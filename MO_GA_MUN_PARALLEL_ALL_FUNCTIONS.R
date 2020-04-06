@@ -2,7 +2,7 @@
 # Integer representation (nodes' IDs), size of the individuals: 
 # between 15 and 50 CONNECTED nodes, tournament selection,
 # customized crossover and mutation operators (to never lose connectivity), 
-# elitism of 1 and generational replacement, each node has a z-score associated 
+# elitism of 1 and generational replacement, each node has a node score associated 
 library(igraph)
 library(nsga2R)
 
@@ -103,16 +103,16 @@ GetListOfAllNodesPresentInLayers <- function(Files) {
 
 
 
-# definition of the function that calculates the individual z-scores for a list of genes
-# INPUTS: ListOfGenes - list of gene names to calculate the z-score
-#         Measure - either consider 'PValue' or 'FDR' for the z-score calculus
-# OUTPUT: Z-scores
-GetZScoresOfListOfGenes <- function(ListOfGenes, Measure) {
+# definition of the function that calculates the individual node score for a list of genes
+# INPUTS: ListOfGenes - list of gene names to calculate the node score
+#         Measure - either consider 'PValue' or 'FDR' for the node score calculus
+# OUTPUT: nodes scores
+GetNodesScoresOfListOfGenes <- function(ListOfGenes, Measure) {
   
   ListOfGenes <- unique(ListOfGenes)
   
-  # calculate z-scores for the genes with formula: z=inverse CDF(1-p) if gene has an expression value and z=-Inf otherwise
-  ZScores <- as.numeric(sapply(
+  # calculate nodes scores for the genes with formula: z=inverse CDF(1-p) if gene has an expression value and z=-Inf otherwise
+  NodesScores <- as.numeric(sapply(
     ListOfGenes, 
     function(X) {
       ifelse (X %in% as.character(DE_results$gene), qnorm( 1 - DE_results[[Measure]][DE_results$gene == X] ), (-Inf))
@@ -121,18 +121,18 @@ GetZScoresOfListOfGenes <- function(ListOfGenes, Measure) {
   
   # LEAVE THE +INF AND -INF UNTIL AFTER THE NORMALIZATION!!! THESE SHOULD ALWAYS BE 1 AND 0, RESPECTIVELY
 
-  # normalizes z-scores to be in the range [0-1], ignoring +Inf and -Inf values
-  ZScores <- 
-    (ZScores - min(ZScores[which(is.finite(ZScores))])) / 
-    (max(ZScores[which(is.finite(ZScores))]) - min(ZScores[which(is.finite(ZScores))]))
+  # normalizes nodes scores to be in the range [0-1], ignoring +Inf and -Inf values
+  NodesScores <- 
+    (NodesScores - min(NodesScores[which(is.finite(NodesScores))])) / 
+    (max(NodesScores[which(is.finite(NodesScores))]) - min(NodesScores[which(is.finite(NodesScores))]))
   
   # replace +Inf with 1
-  ZScores[which(is.infinite(ZScores) & ZScores > 1)] <- 1
+  NodesScores[which(is.infinite(NodesScores) & NodesScores > 1)] <- 1
   
   # replace -Inf with 0
-  ZScores[which(is.infinite(ZScores) & ZScores < 1)] <- 0
+  NodesScores[which(is.infinite(NodesScores) & NodesScores < 1)] <- 0
   
-  return(ZScores)
+  return(NodesScores)
 }
 
 
@@ -301,26 +301,25 @@ PickRandomRoot <- function (MyMultiplex) {
 # definition of the function to evaluate a whole population 
 # INPUTS: MyPopulation - population to evaluate (only the codes of the individuals)
 #         Multiplex - network to which the population belongs to
-#         GenesWithZScores - Z-scores of the genes
+#         GenesWithNodesScores - nodes scores of the genes
 # OUTPUT: Evaluation of the individual (fitness)
-EvaluatePopulation <- function (MyPopulation, Multiplex, GenesWithZScores) {
+EvaluatePopulation <- function (MyPopulation, Multiplex, GenesWithNodesScores) {
   
   MyPopSize <- length(MyPopulation)
   
   # initialize empty data frame
   FitnessData <- 
-    data.frame(Fitness = rep(0, MyPopSize), AverageZScore = rep(0, MyPopSize), Density = rep(0, MyPopSize))
+    data.frame(AverageNodesScore = rep(0, MyPopSize), Density = rep(0, MyPopSize))
   
   for (i in 1:MyPopSize) {
     IndividualsFitnessData <- 
       EvaluateIndividualAndReturnAllFitnessData(
         Individual = MyPopulation[[i]], 
         MultiplexNetwork = Multiplex, 
-        VerticesWithZScores = GenesWithZScores
+        VerticesWithNodesScores = GenesWithNodesScores
       ) 
     
-    FitnessData$Fitness[i] <- IndividualsFitnessData$Fitness
-    FitnessData$AverageZScore[i] <- IndividualsFitnessData$AverageZScore
+    FitnessData$AverageNodesScore[i] <- IndividualsFitnessData$AverageNodesScore
     FitnessData$Density[i] <- IndividualsFitnessData$Density
     
   }
@@ -333,35 +332,25 @@ EvaluatePopulation <- function (MyPopulation, Multiplex, GenesWithZScores) {
 # definition of the function to evaluate an individual 
 # INPUTS: Individual - individual to evaluate
 #         MultiplexNetwork - network to which the individual belongs to
-#         VerticesWithZScores - Z-scores of the genes
+#         VerticesWithNodesScores - nodes scores of the genes
 # OUTPUT: Evaluation of the individual (fitness)
-EvaluateIndividualAndReturnAllFitnessData <- function (Individual, MultiplexNetwork, VerticesWithZScores) {
+EvaluateIndividualAndReturnAllFitnessData <- function (Individual, MultiplexNetwork, VerticesWithNodesScores) {
   
   # verifies that there is at least one node present in the individual
   if ( length(Individual) > 0 ) {
     
-    # gets the sum of the Z-scores of the subnetwork
+    # gets the sum of the nodes scores of the subnetwork
     # I wil use fixed the layer number (1), because the nodes are ordered equally in every layer
-    SumZScores <- 
+    SumNodesScores <- 
       sum(
-        VerticesWithZScores[VerticesWithZScores$gene %in% V(MultiplexNetwork[[1]])$name[Individual], 
-                            "zscore"]
+        VerticesWithNodesScores[VerticesWithNodesScores$gene %in% V(MultiplexNetwork[[1]])$name[Individual], 
+                            "nodescore"]
       )
     
-    # calculates the aggregated z-score of the individual (subnetwork). Check formula in the paper
-    #    AggregatedZScore <- 1 / sqrt(length(Individual)) * SumZScores
-    # NOTE. The original formula uses the squared root of the individual's length to normalize
-    # I will use the length directly, to make sure that my AggregatedZScore can only take values in 
-    # the range of [0-1]
-    # AggregatedZScore <- SumZScores / sqrt( length(Individual) )
-    AverageZScore <- SumZScores / length(Individual)
-    
-    # --- use the fitness function (AggregatedZScore * Density1 * Density2 * Density3) ...  ---
-    Fitness <- AverageZScore
+    AverageNodesScore <- SumNodesScores / length(Individual)
     
     SumDensityAllLayers <- 0
-#    DensityAllLayers <- 1
-    
+
     # loop through all the layers in the multiplex
     for (layer in 1:length(MultiplexNetwork)) {
       # get the subnetwork corresponding to the individual, in the current layer
@@ -370,26 +359,17 @@ EvaluateIndividualAndReturnAllFitnessData <- function (Individual, MultiplexNetw
       # calculate the density of the subnetwork corresponding to the individual, in the current layer
       SubnetworkDensity <- ifelse(!is.nan(graph.density(Subnetwork)), graph.density(Subnetwork), 0) 
       
-      # # normalize the subnetwork's density with respect to the density of the network in the current layer
+      # normalize the subnetwork's density with respect to the density of the network in the current layer
       NormalizedDensity <- SubnetworkDensity / DensityPerLayerMultiplex[layer]
-      # # sum all the densities
+
+      # sum all the densities
       SumDensityAllLayers <- SumDensityAllLayers + NormalizedDensity
-      
-      # new calculus of normalized density = 2 ^ (-(DensityPerLayerMultiplex[layer]/(SubnetworkDensity * length(MultiplexNetwork))))
-      #NormalizedDensity <- 2 ^ (-(DensityPerLayerMultiplex[layer]/(SubnetworkDensity * length(MultiplexNetwork)))) 
-      
-      #DensityAllLayers <- DensityAllLayers * NormalizedDensity
-      
-      # add the fitness of the current layer to the fitness of the individual
-      Fitness <- Fitness * NormalizedDensity
     }
+    
+    Res <- data.frame(AverageNodesScore = AverageNodesScore, Density = SumDensityAllLayers)
   } else {
-    Fitness <- 0
+    Res <- data.frame(AverageNodesScore = 0, Density = )
   }
-  
-  Res <- data.frame(Fitness = Fitness, AverageZScore = AverageZScore, Density = SumDensityAllLayers)
-#  Res <- data.frame(Fitness = Fitness, AverageZScore = AverageZScore, Density = DensityAllLayers)
-  
   return (Res)
 }
 
@@ -1045,7 +1025,7 @@ ReplaceDuplicatedIndividualsWithRandomOnes <- function(CombinedPopulation) {
     GenerateInitialPopulation(PopSize = (nrow(CombinedPopulation) - nrow(DiversePopulation)), Multiplex = Multiplex)
   
   # Evaluate individuals
-  FitnessData <- EvaluatePopulation(MyNewIndividuals, Multiplex, GenesWithZScores)
+  FitnessData <- EvaluatePopulation(MyNewIndividuals, Multiplex, GenesWithNodesScores)
   
   # generate data frame with the individuals and their fitness
   RandomIndividuals <- 
@@ -1153,7 +1133,7 @@ SaveTheBestIndividualsFromFinalPopulation <- function (BestIndividualsFile, Popu
       paste(
         c(
           DecodedInd, 
-          Population[i, c("Fitness", "AverageZScore", "Density", "Rank", "CrowdingDistance")]
+          Population[i, c("AverageNodesScore", "Density", "Rank", "CrowdingDistance")]
         ), 
         collapse=" ", sep=""), 
       file = BestIndividualsFile, 

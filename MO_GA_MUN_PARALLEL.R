@@ -239,13 +239,13 @@ for (RunNumber in 1:NumberOfRunsToExecute) {
           
           # generate data frame with the individuals and their fitness
           NewPopulation <- 
-          data.frame(
-            "Individual" = I(MyNewPopulation), 
-            FitnessData, 
-            Rank = rep(0, nrow(FitnessData)), 
-            CrowdingDistance = rep(0, nrow(FitnessData))
-          )
-          
+               data.frame(
+                 "Individual" = I(MyNewPopulation), 
+                 FitnessData, 
+                 Rank = rep(0, nrow(FitnessData)), 
+                 CrowdingDistance = rep(0, nrow(FitnessData))
+               )
+               
           t1_Replacement <- Sys.time()
           
           # --------------------------------

@@ -305,25 +305,20 @@ PickRandomRoot <- function (MyMultiplex) {
 # OUTPUT: Evaluation of the individual (fitness)
 EvaluatePopulation <- function (MyPopulation, Multiplex, GenesWithNodesScores) {
   
-  MyPopSize <- length(MyPopulation)
-  
-  # initialize empty data frame
-  FitnessData <- 
-    data.frame(AverageNodesScore = rep(0, MyPopSize), Density = rep(0, MyPopSize))
-  
-  for (i in 1:MyPopSize) {
-    IndividualsFitnessData <- 
-      EvaluateIndividualAndReturnAllFitnessData(
-        Individual = MyPopulation[[i]], 
-        MultiplexNetwork = Multiplex, 
-        VerticesWithNodesScores = GenesWithNodesScores
-      ) 
-    
-    FitnessData$AverageNodesScore[i] <- IndividualsFitnessData$AverageNodesScore
-    FitnessData$Density[i] <- IndividualsFitnessData$Density
-    
-  }
-  
+  FitnessData_alternative <- 
+       do.call(
+            rbind, 
+            lapply(
+                 seq_len(length(MyPopulation)), # from 1 to PopSize
+                 function(i) { 
+                      EvaluateIndividualAndReturnAllFitnessData(
+                           Individual = MyPopulation[[i]], 
+                           MultiplexNetwork = Multiplex, 
+                           VerticesWithNodesScores = GenesWithNodesScores
+                      )
+                 } 
+            ))
+
   return (FitnessData)
 }
 
@@ -357,18 +352,18 @@ EvaluateIndividualAndReturnAllFitnessData <- function (Individual, MultiplexNetw
       Subnetwork <- induced_subgraph(MultiplexNetwork[[layer]], Individual)
       
       # calculate the density of the subnetwork corresponding to the individual, in the current layer
-      SubnetworkDensity <- ifelse(!is.nan(graph.density(Subnetwork)), graph.density(Subnetwork), 0) 
-      
-      # normalize the subnetwork's density with respect to the density of the network in the current layer
-      NormalizedDensity <- SubnetworkDensity / DensityPerLayerMultiplex[layer]
+      SubnetworkDensity <- graph.density(Subnetwork)
+      if (is.nan(SubnetworkDensity)) {
+           SubnetworkDensity <- 0
+      }
 
-      # sum all the densities
-      SumDensityAllLayers <- SumDensityAllLayers + NormalizedDensity
+      # add the normalized subnetwork's density with respect to the density of the current layer
+      SumDensityAllLayers <- SumDensityAllLayers + (SubnetworkDensity / DensityPerLayerMultiplex[layer])
     }
     
     Res <- data.frame(AverageNodesScore = AverageNodesScore, Density = SumDensityAllLayers)
   } else {
-    Res <- data.frame(AverageNodesScore = 0, Density = )
+    Res <- data.frame(AverageNodesScore = 0, Density = 0)
   }
   return (Res)
 }
@@ -972,7 +967,8 @@ ReplaceDuplicatedIndividualsWithRandomOnes <- function(CombinedPopulation) {
     IndividualsToRemove <- NULL
     
     # non-dominated sorting and crowding distance calculus
-    PopulationWithCrowdingDistance <- SortByNonDominationAndObtainCrowdingDistance(PopulationToSort = DiversePopulation)
+    PopulationWithCrowdingDistance <- 
+         SortByNonDominationAndObtainCrowdingDistance(PopulationToSort = DiversePopulation)
     
     # loop through all the "duplicated" pairs of individuals
     i <- 1
@@ -981,43 +977,42 @@ ReplaceDuplicatedIndividualsWithRandomOnes <- function(CombinedPopulation) {
       Ind1_ID <- Similarities[i, 1]
       Ind2_ID <- Similarities[i, 2]
       
-      if ( length(unique(PopulationWithCrowdingDistance[c(Ind1_ID, Ind2_ID), "Rank"])) == 1 & 
-           unique(PopulationWithCrowdingDistance[c(Ind1_ID, Ind2_ID), "Rank"])[1] == 1 &
-           length(unique(PopulationWithCrowdingDistance[c(Ind1_ID, Ind2_ID), "CrowdingDistance"])) == 1 &
-           is.infinite(unique(PopulationWithCrowdingDistance[c(Ind1_ID, Ind2_ID), "CrowdingDistance"])[1]) &
-           Similarities$JS[i] < 100) {
-        print("Individuals in first Pareto front very similar. Keeping both of them. Inf crowding distance.")
+      if ( Similarities$JS[i] < 100 &
+           all(PopulationWithCrowdingDistance$Rank[c(Ind1_ID, Ind2_ID)] == 1) & 
+           all(is.infinite(unique(PopulationWithCrowdingDistance$CrowdingDistance[c(Ind1_ID, Ind2_ID), ])[1]))
+     ) {
+        print("Very similar individuals in first Pareto front. Keeping both of them. Inf crowding distance.")
         
         print(PopulationWithCrowdingDistance[c(Ind1_ID, Ind2_ID), ])
       } else {
         # tournament between the two individuals
         IndividualToKeep <- 
-          TournamentSelection(TournamentSize = 2, PopulationForTournament = PopulationWithCrowdingDistance[c(Ind1_ID, Ind2_ID), ])
+          TournamentSelection(
+               TournamentSize = 2, 
+               PopulationForTournament = PopulationWithCrowdingDistance[c(Ind1_ID, Ind2_ID), ]
+               )
         
-        # verify if the individual to keep is I
-        if (rownames(IndividualToKeep) == row.names(PopulationWithCrowdingDistance)[Ind1_ID]) {
-          # remove ind2
-          IndividualsToRemove <- c(IndividualsToRemove, Ind2_ID)
-        } else {
-          # remove ind1
-          IndividualsToRemove <- c(IndividualsToRemove, Ind1_ID)
-        }
+        # get ID of the individual to remove
+        IndividualsToRemove <- 
+             c(IndividualsToRemove, 
+               ifelse(rownames(IndividualToKeep) == row.names(PopulationWithCrowdingDistance)[Ind1_ID],
+                      Ind2_ID, Ind1_ID))
         
         # get all future incidences of the individual to remove
-        References <- which(Similarities == IndividualsToRemove[length(IndividualsToRemove)], arr.ind = TRUE)[, "row"]
-        
-        # leave only the incidences after the current row
-        References <- References[References > i]
+        References <- 
+             which(Similarities == IndividualsToRemove[length(IndividualsToRemove)], arr.ind = TRUE)[, "row"]
         
         # remove all future references to the new individual to remove
-        Similarities <- Similarities[!row.names(Similarities) %in% row.names(Similarities)[References], ]
+        Similarities <- 
+             Similarities[!row.names(Similarities) %in% row.names(Similarities)[References[References > i]], ]
       }
       
       i <- i + 1
     }
     
     # remove the corresponding individuals
-    DiversePopulation <- DiversePopulation[!row.names(DiversePopulation) %in% row.names(DiversePopulation)[IndividualsToRemove], ]
+    DiversePopulation <- 
+         DiversePopulation[!row.names(DiversePopulation) %in% row.names(DiversePopulation)[IndividualsToRemove], ]
   }
   
   # generate as many new individuals as duplicated ones   
@@ -1027,11 +1022,10 @@ ReplaceDuplicatedIndividualsWithRandomOnes <- function(CombinedPopulation) {
   # Evaluate individuals
   FitnessData <- EvaluatePopulation(MyNewIndividuals, Multiplex, GenesWithNodesScores)
   
-  # generate data frame with the individuals and their fitness
-  RandomIndividuals <- 
-    data.frame("Individual" = I(MyNewIndividuals), FitnessData, Rank = 0, CrowdingDistance = 0)
-  
-  DiversePopulation <- rbind(DiversePopulation, RandomIndividuals)
+  DiversePopulation <- 
+       rbind(DiversePopulation, 
+             data.frame("Individual" = I(MyNewIndividuals), FitnessData, Rank = 0, CrowdingDistance = 0)
+             )
 
   DiversePopulation <- SortByNonDominationAndObtainCrowdingDistance(PopulationToSort = DiversePopulation)
 

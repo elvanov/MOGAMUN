@@ -373,13 +373,12 @@ EvaluateIndividualAndReturnAllFitnessData <- function (Individual, MultiplexNetw
 # definition of the function to sort by non-domination a whole population
 # INPUTS: inputData - data frame (contains the individuals' objective functions)
 # OUTPUT: Rank of the population
-fastNonDominatedSorting <-   function(inputData, ReturnOriginalRankingList) {
+fastNonDominatedSorting <-   function(inputData) {
   popSize = nrow(inputData)
   idxDominators = vector("list", popSize)
   idxDominatees = vector("list", popSize)
   for (i in 1:(popSize-1)) {
-    for (j in i:popSize) {
-      if (i != j) {
+    for (j in (i+1):popSize) {
         xi = inputData[i, ]
         xj = inputData[j, ]
         if (all(xi >= xj) && any(xi > xj)) {  ## i dominates j
@@ -389,7 +388,6 @@ fastNonDominatedSorting <-   function(inputData, ReturnOriginalRankingList) {
           idxDominators[[i]] = c(idxDominators[[i]], j)
           idxDominatees[[j]] = c(idxDominatees[[j]], i) 
         }
-      }
     }
   }
   noDominators <- lapply(idxDominators,length);
@@ -414,24 +412,7 @@ fastNonDominatedSorting <-   function(inputData, ReturnOriginalRankingList) {
     solAssigned <- c(solAssigned,length(Q));
   }
   
-  if (ReturnOriginalRankingList == TRUE) {
-    return(rnkList)
-  } else {
-    MyResult <-
-      do.call(
-        rbind,
-        lapply(
-          1:length(rnkList),
-          function(i) {
-            matrix(c(unlist(rnkList[i]), rep(i, length(unlist(rnkList[i])))), ncol = 2, byrow = FALSE)
-          }
-        )
-      )
-    
-    MyResult <- MyResult[order(MyResult[,1]), ]
-    
-    return(MyResult[,2]);
-  }
+  return(rnkList)
 }
 
 
@@ -880,49 +861,29 @@ Mutation <- function (Individuals, Multiplex) {
 #         Children - individuals from the new generation
 # OUTPUT: The selected invididuals to keep for the next generation
 Replacement <- function (Parents, Children) {
-  NewPopulationForReplacement <- data.frame() # initialize empty data frame
-  
   # combine the new population (offspring) with old population (parents)
   CombinedPopulation <- rbind(Parents, Children)
   
   ## CHECK FOR DUPLICATED INDIVIDUALS HERE AND REPLACE THEM FOR NEW GENERATED ONES INSTEAD
   CombinedPopulation <- ReplaceDuplicatedIndividualsWithRandomOnes(CombinedPopulation)
   
-  CurrentRank <- 1
+  # order combined population by rank 
+  CombinedPopulation <- CombinedPopulation[with(CombinedPopulation, order(Rank)), ]
   
-  # loop to create the population that will replace the previous one
-  while( (nrow(NewPopulationForReplacement) < PopSize ) &&
-         (nrow(NewPopulationForReplacement) + length(which(CombinedPopulation$Rank == CurrentRank))) <= PopSize) {
-    
-    # add all the individuals corresponding to the current rank (with crowding distance)
-    NewPopulationForReplacement <-
-      rbind(
-        NewPopulationForReplacement,
-        CombinedPopulation[which(CombinedPopulation$Rank == CurrentRank), ]
-      )
-    
-    # move to the next rank
-    CurrentRank <- CurrentRank + 1
-  }
+  # get last rank which will be in the replacement population
+  LastRank <- CombinedPopulation$Rank[PopSize]
   
-  # if we have less individuals than needed, 
-  # sort, by crowing distance, the ind in the last rank checked, the one that couldn't fit completely
-  if (nrow(NewPopulationForReplacement) < PopSize) {
-    
-    # get the indivuals with the corresponding rank    
-    IndividualsToSort <- CombinedPopulation[which(CombinedPopulation$Rank == CurrentRank), ]
-    
-    # sort the individuals according to crowding distance (decreasing)
-    IndividualsToSort <- IndividualsToSort[order(IndividualsToSort$CrowdingDistance, decreasing = TRUE), ]
-    
-    NewPopulationForReplacement <- 
-      rbind(
-        NewPopulationForReplacement, 
-        IndividualsToSort[ 1:(PopSize - nrow(NewPopulationForReplacement)),  ]
-      )
-    
-  }
+  # get last rank individuals
+  LastRankInds <- CombinedPopulation[CombinedPopulation$Rank == LastRank, ]
+
+  # order by crowding distance
+  LastRankInds <- LastRankInds[with(LastRankInds, order(CrowdingDistance, decreasing = TRUE)), ]
   
+  # select new population for replacement
+  NewPopulationForReplacement <- CombinedPopulation[CombinedPopulation$Rank < LastRank, ]
+  NewPopulationForReplacement <- 
+       rbind( NewPopulationForReplacement, LastRankInds[1:(PopSize - nrow(NewPopulationForReplacement)), ] )
+
   return(NewPopulationForReplacement)
 }
 
@@ -1039,10 +1000,7 @@ ReplaceDuplicatedIndividualsWithRandomOnes <- function(CombinedPopulation) {
 SortByNonDominationAndObtainCrowdingDistance <- function(PopulationToSort) {
   # sort individuals by non domination
   Ranking <- 
-    fastNonDominatedSorting(
-      PopulationToSort[, (colnames(PopulationToSort) %in% MyObjectiveNames)], 
-      ReturnOriginalRankingList = TRUE
-    )
+    fastNonDominatedSorting(PopulationToSort[, (colnames(PopulationToSort) %in% MyObjectiveNames)])
   
   # transform the output of the sorting into a matrix of 2 columns: 1.- Individual ID.  2.- Rank 
   MyResult <-

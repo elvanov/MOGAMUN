@@ -18,6 +18,9 @@ library(nsga2R)
 # INPUTS: DE_results: data frame with 5 columns (output of edgeR), {gene, logFC, logCPM, PValue, FDR}
 # OUTPUT: DE analysis results, with only unique values
 RemoveDuplicates_DE_Results <- function(DE_results) {
+  # remove NAs
+  DE_results <- DE_results[!is.na(DE_results$gene), ]
+     
   dup <- unique(as.character(DE_results$gene[which(duplicated( as.character(DE_results$gene) ) )]))
   
   DE_results_filtered <- DE_results[!as.character(DE_results$gene) %in% dup, ]
@@ -25,7 +28,7 @@ RemoveDuplicates_DE_Results <- function(DE_results) {
   for (d in dup) {
     DupRows <- DE_results[as.character(DE_results$gene) == d, ]
     
-    DE_results_filtered <- rbind(DE_results_filtered, DupRows[sample(nrow(DupRows), 1), ])
+    DE_results_filtered <- rbind(DE_results_filtered, DupRows[which.min(DupRows$FDR), ])
   }
   
   return (DE_results_filtered)

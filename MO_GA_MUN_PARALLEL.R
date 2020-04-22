@@ -9,18 +9,32 @@ source('~/MOGAMUN/MO_GA_MUN_PARALLEL_ALL_FUNCTIONS.R')
 library(doParallel)
 registerDoParallel(cores = 1) # should be in line with the number of physical processor cores
 
-ThresholdSignificantlyDEGenes <- 0.05
-#PathToSaveNodesScores <- "~/Doctorado/Data_files/"
-PathToSaveNodesScores <- "~/Doctorado/Data_files/New_TCGA_Data/Downloaded_May_2019/"
-# PathToSaveNodesScores <- "~/Doctorado/Data_files/Axis3_ResultsGA_MyProposal/Experiment_2019-01-23/"
+# full path for the DE results
+# NOTE. It must contain at least the columns "gene" and ("PValue" or "FDR"). It can also contain "logFC"
+DifferentialExpressionPath <- "C:/Users/EN/Documents/Doctorado/Data_files/New_TCGA_Data/Downloaded_May_2019/DE_edgeR_without_control_88_with_gene_names.csv"
 
+# full path to the file containing the nodes scores. It is recommended to generate it the first time
+# the code is executed for a particular DE analysis. The file must contain 2 columns: "gene" and "nodescore"
+NodesScoresPath <- "C:/Users/EN/Documents/Doctorado/Data_files/New_TCGA_Data/Downloaded_May_2019/GenesWithNodesScores.csv"
+
+# Define the directory where the networks to be used as layer are located
+# Layers' filenames must start by a single digit identifier'
+NetworkLayersDir <- "C:/Users/EN/Documents/Doctorado/Data_files/LayersForTheMultiplex/"
+# Layers to use in the experiment (first character of filename). "123" builds a multiplx with layers 1* 2* and 3*
+LayersToUseForExperiment <- "123"
+
+# Directory where results are stored
+ResultsDir <- "C:/Users/EN/Documents/Doctorado/"
+
+##############################################################################
+############# DEFINITION OF META PARAMETERS ##################################
+##############################################################################
+ThresholdSignificantlyDEGenes <- 0.05
 MinNumberOfNodesPerIndividual <- 15
 MaxNumberOfNodesPerIndividual <- 50
 MaxNumberOfAttempts <- 3 # this is used to find compatible parents and to create a valid size individual
 Measure <- "FDR" # determines how to get the DE genes, either by 'PValue' or 'FDR'
-
 NumberOfRunsToExecute <- 1
-
 
 ########################################################################################################
 ############# DEFINITION OF PARAMETERS FOR THE EVOLUTION PROCESS #######################################
@@ -34,15 +48,15 @@ JaccardSimilarityThreshold <- 30
 TournamentSize <- 2
 MyObjectiveNames <- c("AverageNodesScore", "Density")
 
-# DE_AnalysisResults_FileNameAndPath <-
-#   "~/Doctorado/Data_files/DE_analysis_results_FIBROBLAST_LogFC_SingCorrected_WithDE_Pvalue_FDR.csv"
+# create result folder for new experiment
+ResultsPath <- paste0(ResultsDir, "Experiment_", Sys.Date(), "/")
+dir.create(ResultsPath, recursive=T)
 
-DE_AnalysisResults_FileNameAndPath <-
-  "~/Doctorado/Data_files/New_TCGA_Data/Downloaded_May_2019/DE_edgeR_without_control_88_with_gene_names.csv"
+# defines the path and filename to store the results
+BestIndividualsPath <- paste0(ResultsPath, "MOGAMUN_Results_")
 
 # load DE analysis results
-DE_results <- data.frame(read.csv(DE_AnalysisResults_FileNameAndPath))
-
+DE_results <- data.frame(read.csv(DifferentialExpressionPath))
 DE_results <- RemoveDuplicates_DE_Results(DE_results)
 
 # get list of differentially expressed genes
@@ -50,29 +64,12 @@ DifferentiallyExpressedGenes <-
   DE_results[ abs(DE_results$logFC) > 1 & 
                 DE_results$FDR < ThresholdSignificantlyDEGenes, ]
 
-
-# SET TO NULL WHEN NO NODES SCORE HAS BEEN CALCULATED
-NodesScores_FileAndPath <- "~/Doctorado/Data_files/New_TCGA_Data/Downloaded_May_2019/GenesWithNodesScores.csv"
-# NodesScores_FileAndPath <- NULL
-
-# set working path
-WorkingPath <- "~/Doctorado/Data_files/New_TCGA_Data/Downloaded_May_2019/"
-
-# define the path where the networks to be used as layer are 
-MyLayersPath <- paste0(WorkingPath, "LayersForTheMultiplex/")
-# MyLayersPath <- "~/Doctorado/Data_files/LayersForTheMultiplex_SMALL_FOR_TESTING/"
-
-LayersToUseForExperiment <- "123"
-
 # read the file names of the networks for the current experiment 
-Files <- list.files(MyLayersPath, pattern = paste0("^[", LayersToUseForExperiment, "]_"))
+Files <- list.files(NetworkLayersDir, pattern = paste0("^[", LayersToUseForExperiment, "]_"))
 
-# create folder for new experiment
-WorkingPath <- paste0(WorkingPath, "Experiment_", Sys.Date(), "/")
-dir.create(WorkingPath)
 
 # if no nodes scores file was given
-if ( is.null(NodesScores_FileAndPath) ) {
+if ( ! file.exists(NodesScoresPath) ) {
   # calculates the nodes scores for all the genes in DE analysis results
   NodesScores <- as.numeric(GetNodesScoresOfListOfGenes(as.character(DE_results$gene), Measure))
 
@@ -80,9 +77,9 @@ if ( is.null(NodesScores_FileAndPath) ) {
   # IMPORTANT!!! ANY gene not included in this list, has node score = 0
   GenesWithNodesScores <- data.frame("gene" = as.character(DE_results$gene),  "nodescore" = NodesScores)
 
-  write.csv(GenesWithNodesScores, file = paste0(PathToSaveNodesScores, "GenesWithNodesScores.csv"), row.names = FALSE)
+  write.csv(GenesWithNodesScores, file = NodesScoresPath, row.names = FALSE)
 } else {
-  GenesWithNodesScores <- data.frame(read.csv(NodesScores_FileAndPath, stringsAsFactors = FALSE))
+  GenesWithNodesScores <- data.frame(read.csv(NodesScoresPath, stringsAsFactors = FALSE))
 }
 
 # generates the multiplex and merged network 
@@ -92,15 +89,13 @@ Merged <- GenerateMergedNetwork(Files)
 # calculate density per layer of the multiplex
 DensityPerLayerMultiplex <- unlist(lapply(Multiplex, graph.density))
 
-# defines the path and filename to store the results
-BestIndividualsPath <- paste0(WorkingPath, "MOGAMUN_Results_")
-
 ########################################################################################################################
 ############# --------------------------------- M A I N   L O O P -------------------------#############################
 ########################################################################################################################
 # loop to execute the algorithm many times
 # to measure the execution time: comment the following line if you are not benchmarking
 #ptime <- system.time(
+
 #foreach(RunNumber = 1:NumberOfRunsToExecute) %dopar% {
 for (RunNumber in 1:NumberOfRunsToExecute) {
      BestIndividualsFile <- paste0(BestIndividualsPath, "_Run_", RunNumber, ".csv")
@@ -135,8 +130,6 @@ for (RunNumber in 1:NumberOfRunsToExecute) {
      
      # evolution's loop for a given number of generations or untill all the individuals are in the first Pareto front
      while (g <= Generations && !all(Population$Rank == 1)) {
-          t1_Generation <- Sys.time()
-          
           MyNewPopulation <- vector("list", PopSize) # initialize an empty vector of the population size
           
           # loop to generate the new population. In each loop, 2 children are created
@@ -144,8 +137,6 @@ for (RunNumber in 1:NumberOfRunsToExecute) {
           # initialize control variables
           AttemptsToFindParents <- 0 # counter to control maximum number of attemps to find parents
           KeepLooking <- TRUE # flag to keep looking for parents
-          
-          t1_CompParents <- Sys.time()
           
           while ( AttemptsToFindParents < MaxNumberOfAttempts & KeepLooking == TRUE ) {
             # --------------------------------
@@ -198,11 +189,7 @@ for (RunNumber in 1:NumberOfRunsToExecute) {
               AttemptsToFindParents <- AttemptsToFindParents + 1
             }
           }
-            
-          t2_CompParents <- Sys.time()
-          
-          t1_Crossover <- Sys.time()
-          
+
           if (AttemptsToFindParents == MaxNumberOfAttempts) {
             ### ***** ADD NEW GENERATED RANDOM INDIVIDUAL *****
             print("Maximum number of attemps to find compatible parents reached. Adding two random individuals to the new population.")
@@ -215,28 +202,21 @@ for (RunNumber in 1:NumberOfRunsToExecute) {
             # ---------------------------------
             Children <- Crossover(Parent1, Parent2)
           }
-          t2_Crossover <- Sys.time()
-          
-          t1_Mutation <- Sys.time()
-          
+
           # --------------------------------
           # ----- Mutation
           # ---------------------------------
           Children <- Mutation(Children, Multiplex)      
-          t2_Mutation <- Sys.time()
-          
+
           # NOTE. Doing "MyNewPopulation[i] <- list(Children[[1]])" and "MyNewPopulation[i] <- Children[1]" is equivalent
           MyNewPopulation[i] <- Children[1] # add individual to the population
           MyNewPopulation[i+1] <- Children[2] # add individual to the population
           }
           
           # ----- Here we already have a whole new population
-          t1_Evaluate <- Sys.time()
-          
           # evaluate offspring
           FitnessData <- EvaluatePopulation(MyNewPopulation, Multiplex, GenesWithNodesScores)
-          t2_Evaluate <- Sys.time()
-          
+
           # generate data frame with the individuals and their fitness
           NewPopulation <- 
                data.frame(
@@ -246,14 +226,11 @@ for (RunNumber in 1:NumberOfRunsToExecute) {
                  CrowdingDistance = rep(0, nrow(FitnessData))
                )
                
-          t1_Replacement <- Sys.time()
-          
           # --------------------------------
           # ----- Replacement
           # ---------------------------------
           NewPopulationForReplacement <- Replacement(Parents = Population, Children = NewPopulation)
-          t2_Replacement <- Sys.time()
-          
+
           # replace old population
           Population <- NewPopulationForReplacement
           
@@ -263,16 +240,7 @@ for (RunNumber in 1:NumberOfRunsToExecute) {
             max(Population$Density) # "DensityOfBestIndividualInGeneration"
           )
           
-          t2_Generation <- Sys.time()
-          print(
-               paste0(
-                    g, ". Gen: ", round(t2_Generation-t1_Generation), 
-                    ". Comp_parents: ", round(t2_CompParents-t1_CompParents), 
-                    ". Crossover: ", round(t2_Crossover-t1_Crossover), 
-                    ". Mutation: ", round(t2_Mutation-t1_Mutation),
-                    ". Evaluation: ", round(t2_Evaluate-t1_Evaluate),
-                    ". Replacement: ", round(t2_Replacement-t1_Replacement)))
-         # print(paste0("Generation ", g, ": ", sum(Population$Rank == 1), " individuals in first Pareto front, max. density = ", max(Population$Density), ", max. AverageNodesScore = ", max(Population$AverageNodesScore)))
+          print(paste0("Generation ", g, " completed"))
           
           g <- g + 1 # increments the generation
      }     ### end of      while (g <= Generations)
@@ -284,7 +252,7 @@ for (RunNumber in 1:NumberOfRunsToExecute) {
      file = paste0(BestIndividualsPath, 
                  "StatisticsPerGeneration_Run", 
                  RunNumber, 
-                 ".csv")
+                 ".csv"), row.names = FALSE
      )
      
      # saves the best individuals of the final population
@@ -297,8 +265,7 @@ for (RunNumber in 1:NumberOfRunsToExecute) {
      )
      
      print(paste0("FINISH TIME, RUN ", RunNumber, ": ", Sys.time()))
-     Sys.time()  
-     
+
      gc()
 }  
 

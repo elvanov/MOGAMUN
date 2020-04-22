@@ -47,7 +47,7 @@ GenerateMultiplexNetwork <- function(Files) {
   # loop through all the layers to get the corresponding subnetwork from each of them
   for (LayerFile in Files) {
     # load layer
-    Layer <- data.frame(read.table(paste0(MyLayersPath, LayerFile), header = FALSE, stringsAsFactors = FALSE))
+    Layer <- data.frame(read.table(paste0(NetworkLayersDir, LayerFile), header = FALSE, stringsAsFactors = FALSE))
     
     # create network with the current layer, making sure all the nodes have the same ID in every layer
     CurrentNetwork <- graph_from_data_frame(d = Layer, vertices = AllNodesToTake, directed = FALSE)
@@ -70,7 +70,7 @@ GenerateMergedNetwork <- function(Files) {
   # loop through all the layers to get the corresponding subnetwork from each of them
   for (LayerFile in Files) {
     # load layer
-    Layer <- data.frame(read.table(paste0(MyLayersPath, LayerFile), header = FALSE, stringsAsFactors = FALSE), Layer = LayerFile)
+    Layer <- data.frame(read.table(paste0(NetworkLayersDir, LayerFile), header = FALSE, stringsAsFactors = FALSE), Layer = LayerFile)
     Merged <- rbind(Merged, Layer)
   }  
 
@@ -90,7 +90,7 @@ GetListOfAllNodesPresentInLayers <- function(Files) {
   # loop through all the layers to get the corresponding subnetwork from each of them
   for (LayerFile in Files) {
     # load layer
-    Layer <- data.frame(read.table(paste0(MyLayersPath, LayerFile), header = FALSE, stringsAsFactors = FALSE))
+    Layer <- data.frame(read.table(paste0(NetworkLayersDir, LayerFile), header = FALSE, stringsAsFactors = FALSE))
     
     AllNodes <- c(AllNodes, unique(union(Layer[, 1], Layer[, 2])))
   }

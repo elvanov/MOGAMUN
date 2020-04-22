@@ -308,7 +308,7 @@ PickRandomRoot <- function (MyMultiplex) {
 # OUTPUT: Evaluation of the individual (fitness)
 EvaluatePopulation <- function (MyPopulation, Multiplex, GenesWithNodesScores) {
   
-  FitnessData_alternative <- 
+  FitnessData <- 
        do.call(
             rbind, 
             lapply(

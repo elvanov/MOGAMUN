@@ -38,7 +38,7 @@ setUpMetaParameters <- function(ThresholdSignificantlyDEGenes = 0.05,
 #'                                 MutationRate = 0.1,
 #'                                 JaccardSimilarityThreshold = 30,
 #'                                 TournamentSize = 2,
-#'                                 MyObjectiveNames = c("AverageZScore", "Density"))
+#'                                 MyObjectiveNames = c("AverageNodesScore", "Density"))
 #' @export
 setUpEvolutionProcessParameters <- function(Generations = 500,
                                             PopSize = 100,
@@ -66,12 +66,12 @@ setUpEvolutionProcessParameters <- function(Generations = 500,
 #' @description Load the data to process
 #' @return None
 #' @examples
-#' loadData(DifferentialExpressionPath = "Downloaded_May_2019/DE_edgeR_without_control_88_with_gene_names.csv",
+#' loadData(DEPath = "Downloaded_May_2019/DE_edgeR_without_control_88_with_gene_names.csv",
 #'          NodesScoresPath = "GenesWithNodesScores.csv",
 #'          NetworkLayersDir = "LayersForTheMultiplex/",
-#'          LayersToUse <- "123")
+#'          Layers = "123")
 #' @export
-loadData <- function(DEPath, NodesScoresPath, NetworkLayersDir, Layers) {
+loadData <- function(DEPath, NodesScoresPath = "", NetworkLayersDir, Layers) {
      # full path for the DE results
      # NOTE. It must contain at least the columns "gene" and ("PValue" or "FDR"). It can also contain "logFC"
      DifferentialExpressionPath <- DEPath

@@ -1,0 +1,13 @@
+Package: MOGAMUN
+Type: Package
+Title: A Multi-Objective Genetic Algorithm to Find Active Modules from Multiplex Biological Networks
+Version: 0.1.0
+Author: Elva María Novoa del Toro
+Maintainer: Elva María Novoa del Toro <elva.novoa@inserm.fr>, Laurent Tichit <laurent.tichit@univ-amu.fr>
+Description: A Multi-Objective Genetic Algorithm to Find Active Modules from Multiplex Biological Networks.
+    MOGAMUN, a multi-objective genetic algorithm to identify active modules in multiplex biological networks, where different biological networks are organized as independent layers.
+License: GPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+Depends: doParallel (>= 1.0.0), igraph (>= 1.2.0.0)
+RoxygenNote: 7.1.0

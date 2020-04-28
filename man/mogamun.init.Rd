@@ -43,9 +43,9 @@
      
      \item{MaxNumberOfAttempts}{maximum number of attempts to find compatible parents for the crossover (default = 3)}
      
-     \item{Measure}{Measure measure to calculate the nodes scores and to determine which genes are differentially expressed (possible values PValue and FDR, default = FDR)}
+     \item{Measure}{measure to calculate the nodes scores and to determine which genes are differentially expressed (possible values PValue and FDR, default = FDR)}
      
-     \item{NumberOfRunsToExecute}{NumberOfRunsToExecute number of runs (default = 1)}
+     \item{NumberOfRunsToExecute}{number of runs (default = 1)}
 }
 \value{
      None

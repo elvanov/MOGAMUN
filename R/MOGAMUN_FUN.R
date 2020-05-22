@@ -282,10 +282,10 @@ PickRandomRoot <- function (MyMultiplex) {
   SearchSpaceGenes <- names( V(MyMultiplex[[1]]) )
 
   # get the list of all the DE genes (from the whole DE analysis test)
-  DEGenesNames <- as.character(DifferentiallyExpressedGenes$gene)
+  DEGenesNames <- as.character(DEG$gene)
 
   # get the list of DE genes in the search space
-  DEGenesInSearchSpace <- as.character(DifferentiallyExpressedGenes[DEGenesNames %in% SearchSpaceGenes, "gene"])
+  DEGenesInSearchSpace <- as.character(DEG[DEGenesNames %in% SearchSpaceGenes, "gene"])
 
   # verify if there is at least one DE gene
   if (length(DEGenesInSearchSpace) > 0) {
@@ -728,7 +728,7 @@ Mutation <- function (Individuals, Multiplex) {
 
       # remove all the DE genes from the list
       IndividualToMutate_NodesDegrees <-
-        IndividualToMutate_NodesDegrees[!names(IndividualToMutate_NodesDegrees) %in% as.character(DifferentiallyExpressedGenes$gene)]
+        IndividualToMutate_NodesDegrees[!names(IndividualToMutate_NodesDegrees) %in% as.character(DEG$gene)]
 
       # get the list of nodes with the minimum degree, i.e., the peripheral nodes
       PeripheralNodes <- which.min(IndividualToMutate_NodesDegrees)
@@ -781,7 +781,7 @@ Mutation <- function (Individuals, Multiplex) {
           if(length(AvailableNeighbors) > 0) {
 
             # get the list of DE genes that are neighbors of the current individual
-            DE_Neighbors <- AvailableNeighbors[AvailableNeighbors %in% as.character(DifferentiallyExpressedGenes$gene)]
+            DE_Neighbors <- AvailableNeighbors[AvailableNeighbors %in% as.character(DEG$gene)]
 
             # verify if there is at least one DE gene in the list of neighbors
             if (length(DE_Neighbors) > 0) {
@@ -822,7 +822,7 @@ Mutation <- function (Individuals, Multiplex) {
         if(length(AvailableNeighbors) > 0) {
 
           # get the list of DE genes that are neighbors of the current individual
-          DE_Neighbors <- AvailableNeighbors[AvailableNeighbors %in% as.character(DifferentiallyExpressedGenes$gene)]
+          DE_Neighbors <- AvailableNeighbors[AvailableNeighbors %in% as.character(DEG$gene)]
 
           # verify if there is at least one DE gene in the list of neighbors
           if (length(DE_Neighbors) > 0) {

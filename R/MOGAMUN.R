@@ -17,7 +17,7 @@
 #' @param JaccardSimilarityThreshold subnetworks over this Jaccard similarity threshold are considered as duplicated (default = 30)
 #' @param TournamentSize size of the tournament (default = 2)
 #' @param ObjectiveNames list containing the names of the objectives (default =  c("AverageNodesScore", "Density"))
-#' @param ThresholdSignificantlyDEGenes threshold to consider a gene as significantly differerentially expressed. Note: if there is a logFC available, it is also considered |logFC|>1  (default = 0.05)
+#' @param ThresholdDEG threshold to consider a gene as significantly differerentially expressed. Note: if there is a logFC available, it is also considered |logFC|>1  (default = 0.05)
 #' @param MaxNumberOfAttempts maximum number of attempts to find compatible parents (default = 3) 
 #' @param Measure measure to calculate the nodes scores and to determine which genes are differentially expressed (possible values PValue and FDR, default = FDR)
 #' @param NumberOfRunsToExecute number of runs (default = 1)
@@ -34,7 +34,7 @@
 #'                JaccardSimilarityThreshold = 30,
 #'                TournamentSize = 2,
 #'                ObjectiveNames = c("AverageNodesScore", "Density"),
-#'                ThresholdSignificantlyDEGenes = 0.05,
+#'                ThresholdDEG = 0.05,
 #'                MaxNumberOfAttempts = 3,
 #'                Measure = "FDR",
 #'                NumberOfRunsToExecute = 1)
@@ -49,7 +49,7 @@ mogamun.init <- function(Generations = 500,
                           JaccardSimilarityThreshold = 30,
                           TournamentSize = 2,
                           ObjectiveNames = c("AverageNodesScore", "Density"),
-                          ThresholdSignificantlyDEGenes = 0.05,
+                          ThresholdDEG = 0.05,
                           MaxNumberOfAttempts = 3,
                           Measure = "FDR",
                           NumberOfRunsToExecute = 1) {
@@ -63,7 +63,7 @@ mogamun.init <- function(Generations = 500,
      JaccardSimilarityThreshold <<- JaccardSimilarityThreshold
      TournamentSize <<- TournamentSize
      ObjectiveNames <<- ObjectiveNames
-     ThresholdSignificantlyDEGenes <<- ThresholdSignificantlyDEGenes
+     ThresholdDEG <<- ThresholdDEG
      MaxNumberOfAttempts <<- MaxNumberOfAttempts # this is used to find compatible parents and to create a valid size individual
      Measure <<- Measure # determines how to get the DE genes, either by 'PValue' or 'FDR'
      NumberOfRunsToExecute <<- NumberOfRunsToExecute
@@ -73,10 +73,10 @@ mogamun.init <- function(Generations = 500,
 #'
 #' @description Load the data to process
 #'
-#' @param DifferentialExpressionPath - full path to the differential expression results file (in CSV format). This file must contain It must contain at least the columns "gene" with the gene names, and ("PValue" or "FDR"). It can also contain "logFC"
-#' @param NodesScoresPath - full path to the file containing the nodes scores (in CSV format). It must contain two columns: "gene" and "nodescore". NOTE. If no file is available, it wll be automatically generated
-#' @param NetworkLayersDir - path of the folder that contains the networks that will be the layers of the multiplex
-#' @param Layers - string of numbers, where the numbers correspond to the first character of the name of the network files
+#' @param DifferentialExpressionPath full path to the differential expression results file (in CSV format). This file must contain It must contain at least the columns "gene" with the gene names, and ("PValue" or "FDR"). It can also contain "logFC"
+#' @param NodesScoresPath full path to an existing CSV file containing the nodes scores (columns "gene" and "nodescore"). NOTE. If the file does not exist, MOGAMUN will generate it in the provided path with the specified name
+#' @param NetworkLayersDir path of the folder that contains the networks that will be the layers of the multiplex
+#' @param Layers string of numbers, where the numbers correspond to the first character of the name of the network files
 #'
 #' @return None
 #'
@@ -111,10 +111,14 @@ mogamun.load.data <- function(DifferentialExpressionPath, NodesScoresPath, Netwo
      DE_results <<- data.frame(read.csv(DifferentialExpressionPath))
      DE_results <<- RemoveDuplicates_DE_Results(DE_results)
 
-     # get list of differentially expressed genes
-     DifferentiallyExpressedGenes <<-
-          DE_results[ abs(DE_results$logFC) > 1 &
-                           DE_results$FDR < ThresholdSignificantlyDEGenes, ]
+     # get list of DEG
+     DEG <<- DE_results[DE_results$FDR < ThresholdDEG, ]
+
+     # if there is a column contanining the log(fold change), take it into account for the DEG
+     if ("logFC" %in% colnames(DE_results)) {
+          DEG <<- DEG[abs(DE_results$logFC) > 1, ]
+          
+     }
 
      # read the file names of the networks for the current experiment
      Files <- list.files(NetworkLayersDir, pattern = paste0("^[", LayersToUse, "]_"), full.names=T)
@@ -326,7 +330,7 @@ mogamun.run <- function(resultsDir = '.') {
                  max(Population$Density) # "DensityOfBestIndividualInGeneration"
                )
 
-               print(paste0("Generation ", g, " completed"))
+               print(paste0("Run ", RunNumber, ". Generation ", g, " completed"))
 
                g <- g + 1 # increments the generation
           }     ### end of      while (g <= Generations)

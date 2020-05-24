@@ -41,7 +41,7 @@ The second step is to provide the input data (including the path to the biologic
 
 The last step is to run MOGAMUN, using the `mogamun.run` command, giving as parameter the path to the folder where the results will be stored. See `?mogamun.run` for further details.
 
-**Important note.** You can find a full set of example files to run MOGAMUN in [MOGAMUN experiment github page](https://github.com/elvanov/MOGAMUN.experiment).
+**Important note.** You can find a full set of example files to run MOGAMUN in [MOGAMUN github page - ExampleFiles.rar](https://github.com/elvanov/MOGAMUN)
 
 
 ### Interpreting the results

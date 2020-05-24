@@ -188,7 +188,7 @@ mogamun.run <- function(resultsDir = '.') {
 
      #foreach(RunNumber = 1:NumberOfRunsToExecute) %dopar% {
      for (RunNumber in 1:NumberOfRunsToExecute) {
-          BestIndividualsFile <- paste0(BestIndividualsPath, "_Run_", RunNumber, ".csv")
+          BestIndividualsFile <- paste0(BestIndividualsPath, "_Run_", RunNumber, ".txt")
 
           # ---------------------------------
           # ----- Create initial population of specified size
@@ -213,9 +213,9 @@ mogamun.run <- function(resultsDir = '.') {
 
           StatisticsPerGeneration <- data.frame(matrix(ncol = 3, nrow = 0))
           colnames(StatisticsPerGeneration) <- c(
-          "GenerationNumber",
-          "AverageNodesScoreOfBestIndividualInGeneration",
-          "DensityOfBestIndividualInGeneration"
+          "Generation",
+          "BestAverageNodesScore",
+          "BestDensity"
           )
 
           # evolution's loop for a given number of generations or untill all the individuals are in the first Pareto front
@@ -325,9 +325,9 @@ mogamun.run <- function(resultsDir = '.') {
                Population <- NewPopulationForReplacement
 
                StatisticsPerGeneration[nrow(StatisticsPerGeneration) + 1, ] <-
-               c(g, # "GenerationNumber"
-                 max(Population$AverageNodesScore), # "AverageNodesScoreOfBestIndividualInGeneration"
-                 max(Population$Density) # "DensityOfBestIndividualInGeneration"
+               c(g, # "Generation"
+                 max(Population$AverageNodesScore), # "BestAverageNodesScore"
+                 max(Population$Density) # "BestDensity"
                )
 
                print(paste0("Run ", RunNumber, ". Generation ", g, " completed"))

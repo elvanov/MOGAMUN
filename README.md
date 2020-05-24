@@ -41,11 +41,13 @@ The second step is to provide the input data (including the path to the biologic
 
 The last step is to run MOGAMUN, using the `mogamun.run` command, giving as parameter the path to the folder where the results will be stored. See `?mogamun.run` for further details.
 
+Be aware that the runnig time of for 500 generations was of approximately 12 hours, in a desk computer with Intel processor i7 at 3.60GHz and 32GB of RAM.
+
 **Important note.** You can find a full set of example files to run MOGAMUN in [MOGAMUN github page - ExampleFiles.rar](https://github.com/elvanov/MOGAMUN)
 
 
 ### Interpreting the results
 
-In the results' path that you specified in `mogamun.run`, you will find two files per run (*MOGAMUN_Results_StatisticsPerGeneration_RunN.csv* and *MOGAMUN_Results__Run_N.csv*). The file *MOGAMUN_Results_StatisticsPerGeneration_RunN.csv* contains the best values of the average nodes score and density per generation (you can use them to check the convergence), and the file *MOGAMUN_Results__Run_N.csv* contains the complete final population (i.e. the subnetworks from the last generation), one per row. The number of elements in every row is variable. If *X_n* is the number of elements in the *n*-th row: the nodes of the subnetwork are the first *X_n*-4 elements, and the last four elements are the average nodes score, the density, the rank and the crowding distance, respectively. The best (non-dominated) subnetworks have are those with rank = 1. 
+In the results' path that you specified in `mogamun.run`, you will find two files per run (*MOGAMUN_Results_StatisticsPerGeneration_RunN.csv* and *MOGAMUN_Results__Run_N.txt*). The file *MOGAMUN_Results_StatisticsPerGeneration_RunN.csv* contains the best values of the average nodes score and density per generation (you can use them to check the convergence), and the file *MOGAMUN_Results__Run_N.txt* contains the complete final population (i.e. the subnetworks from the last generation), one per row. The number of elements in every row is variable. If *X_n* is the number of elements in the *n*-th row: the nodes of the subnetwork are the first *X_n*-4 elements. The last four elements are the average nodes score, the density, the rank and the crowding distance, respectively. The best (non-dominated) subnetworks have are those with rank = 1. 
 
 

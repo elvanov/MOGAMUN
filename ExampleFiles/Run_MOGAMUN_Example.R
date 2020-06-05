@@ -6,7 +6,7 @@ mogamun.init(Generations=5)
 
 # load data files. Check ?mogamun.load.data for usage
 mogamun.load.data(DifferentialExpressionPath = "DifferentialExpressionData/Banerji2017.csv",
-         NodesScoresPath = "DifferentialExpressionData/Banerji2017_NodesScore",
+         NodesScoresPath = "DifferentialExpressionData/Banerji2017_NodesScore.csv",
          NetworkLayersDir = "LayersMultiplex/",
          Layers = "123")
 

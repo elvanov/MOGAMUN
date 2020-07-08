@@ -1,3 +1,5 @@
+![R-CMD-check](https://github.com/elvanov/MOGAMUN/workflows/R-CMD-check/badge.svg)
+
 # MOGAMUN - A Multi-Objective Genetic Algorithm to Find Active Modules in Multiplex Biological Networks
 
 ## Description

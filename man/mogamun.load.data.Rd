@@ -12,13 +12,13 @@ mogamun.load.data(
 )
 }
 \arguments{
-\item{DifferentialExpressionPath}{- full path to the differential expression results file (in CSV format). This file must contain It must contain at least the columns "gene" with the gene names, and ("PValue" or "FDR"). It can also contain "logFC"}
+\item{DifferentialExpressionPath}{full path to the differential expression results file (in CSV format). This file must contain It must contain at least the columns "gene" with the gene names, and ("PValue" or "FDR"). It can also contain "logFC"}
 
-\item{NodesScoresPath}{- full path to the file containing the nodes scores (in CSV format). It must contain two columns: "gene" and "nodescore". NOTE. If no file is available, it wll be automatically generated}
+\item{NodesScoresPath}{full path to an existing CSV file containing the nodes scores (columns "gene" and "nodescore"). NOTE. If the file does not exist, MOGAMUN will generate it in the provided path with the specified name}
 
-\item{NetworkLayersDir}{- path of the folder that contains the networks that will be the layers of the multiplex}
+\item{NetworkLayersDir}{path of the folder that contains the networks that will be the layers of the multiplex}
 
-\item{Layers}{- string of numbers, where the numbers correspond to the first character of the name of the network files}
+\item{Layers}{string of numbers, where the numbers correspond to the first character of the name of the network files}
 }
 \value{
 None
@@ -28,10 +28,12 @@ Load the data to process
 }
 \examples{
 mogamun.init()
-mogamun.load.data(DifferentialExpressionPath =
-                   "~/My_Experiment/Differential_Expression_Results.csv",
-        NodesScoresPath = "~/My_Experiment/Genes_With_Nodes_Scores.csv",
-        NetworkLayersDir = "~/My_Experiment/Layers_Multiplex/",
-        Layers = "123")
+dgepath <- system.file("ExampleFiles/DifferentialExpressionData/Banerji2017.csv", package = "MOGAMUN")
+nodescorepath <- system.file("ExampleFiles/DifferentialExpressionData/Banerji2017_NodesScore.csv", package = "MOGAMUN")
+layerspath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
+mogamun.load.data(DifferentialExpressionPath = dgepath,
+                  NodesScoresPath = nodescorepath,
+                  NetworkLayersDir = layerspath,
+                  Layers = "123")
 
 }

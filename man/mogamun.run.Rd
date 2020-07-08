@@ -17,11 +17,14 @@ Run the algo
 }
 \examples{
 mogamun.init(Generations=0)
-mogamun.load.data(DifferentialExpressionPath =
-                   "~/My_Experiment/Differential_Expression_Results.csv",
-        NodesScoresPath = "~/My_Experiment/Genes_With_Nodes_Scores.csv",
-        NetworkLayersDir = "~/My_Experiment/Layers_Multiplex/",
-        Layers = "123")
-mogamun.run(resultsDir = '~/My_Experiment/MOGAMUN_Results/')
+
+dgepath <- system.file("ExampleFiles/DifferentialExpressionData/Banerji2017.csv", package = "MOGAMUN")
+nodescorepath <- system.file("ExampleFiles/DifferentialExpressionData/Banerji2017_NodesScore.csv", package = "MOGAMUN")
+layerspath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
+mogamun.load.data(DifferentialExpressionPath = dgepath,
+                  NodesScoresPath = nodescorepath,
+                  NetworkLayersDir = layerspath,
+                  Layers = "123")
+mogamun.run(resultsDir = tempdir())
 
 }

@@ -5,6 +5,7 @@
 \title{mogamun.load.data}
 \usage{
 mogamun.load.data(
+  EvolutionParameters,
   DifferentialExpressionPath,
   NodesScoresPath,
   NetworkLayersDir,
@@ -12,6 +13,8 @@ mogamun.load.data(
 )
 }
 \arguments{
+\item{EvolutionParameters}{evolution paramenters returned by mogamun.init()}
+
 \item{DifferentialExpressionPath}{full path to the differential expression results file (in CSV format). This file must contain It must contain at least the columns "gene" with the gene names, and ("PValue" or "FDR"). It can also contain "logFC"}
 
 \item{NodesScoresPath}{full path to an existing CSV file containing the nodes scores (columns "gene" and "nodescore"). NOTE. If the file does not exist, MOGAMUN will generate it in the provided path with the specified name}
@@ -21,19 +24,20 @@ mogamun.load.data(
 \item{Layers}{string of numbers, where the numbers correspond to the first character of the name of the network files}
 }
 \value{
-None
+List with the data to process
 }
 \description{
 Load the data to process
 }
 \examples{
-mogamun.init()
-dgepath <- system.file("ExampleFiles/DifferentialExpressionData/Banerji2017.csv", package = "MOGAMUN")
-nodescorepath <- system.file("ExampleFiles/DifferentialExpressionData/Banerji2017_NodesScore.csv", package = "MOGAMUN")
-layerspath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
-mogamun.load.data(DifferentialExpressionPath = dgepath,
-                  NodesScoresPath = nodescorepath,
-                  NetworkLayersDir = layerspath,
+EvolutionParameters <- mogamun.init()
+DEGPath <- system.file("ExampleFiles/DE/Banerji2017.csv", package = "MOGAMUN")
+NodesScoresPath <- system.file("ExampleFiles/DE/Banerji2017_NodesScore.csv", package = "MOGAMUN")
+LayersPath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
+LoadedData <- mogamun.load.data(EvolutionParameters = EvolutionParameters,
+                  DifferentialExpressionPath = DEGPath,
+                  NodesScoresPath = NodesScoresPath,
+                  NetworkLayersDir = LayersPath,
                   Layers = "123")
 
 }

@@ -4,27 +4,37 @@
 \alias{mogamun.run}
 \title{mogamun.run}
 \usage{
-mogamun.run(resultsDir = ".")
+mogamun.run(LoadedData, Cores = 1, NumberOfRunsToExecute = 1, ResultsDir = ".")
 }
 \arguments{
-\item{resultsDir}{outputs the results in the specified folder}
+\item{LoadedData}{list returned by mogamun.load.data()}
+
+\item{Cores}{to run MOGAMUN in parallel on the given number of cores (in line with the number of physical processor cores)}
+
+\item{NumberOfRunsToExecute}{number of runs (default = 1)}
+
+\item{ResultsDir}{outputs the results in the specified folder}
 }
 \value{
 None
 }
 \description{
-Run the algo
+Run the algorithm with the specified values for the evolution parameters
 }
 \examples{
-mogamun.init(Generations=0)
 
-dgepath <- system.file("ExampleFiles/DifferentialExpressionData/Banerji2017.csv", package = "MOGAMUN")
-nodescorepath <- system.file("ExampleFiles/DifferentialExpressionData/Banerji2017_NodesScore.csv", package = "MOGAMUN")
-layerspath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
-mogamun.load.data(DifferentialExpressionPath = dgepath,
-                  NodesScoresPath = nodescorepath,
-                  NetworkLayersDir = layerspath,
+DEGPath <- system.file("ExampleFiles/DE/Banerji2017.csv", package = "MOGAMUN")
+NodesScoresPath <- system.file("ExampleFiles/DE/Banerji2017_NodesScore.csv", package = "MOGAMUN")
+LayersPath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
+EvolutionParameters <- mogamun.init(Generations = 5)
+LoadedData <- mogamun.load.data(EvolutionParameters = EvolutionParameters,
+                  DifferentialExpressionPath = DEGPath,
+                  NodesScoresPath = NodesScoresPath,
+                  NetworkLayersDir = LayersPath,
                   Layers = "123")
-mogamun.run(resultsDir = tempdir())
+mogamun.run(LoadedData = LoadedData,
+                  Cores = 1,
+                  NumberOfRunsToExecute = 1,
+                  ResultsDir = tempdir()) 
 
 }

@@ -16,8 +16,7 @@ mogamun.init(
   ObjectiveNames = c("AverageNodesScore", "Density"),
   ThresholdDEG = 0.05,
   MaxNumberOfAttempts = 3,
-  Measure = "FDR",
-  NumberOfRunsToExecute = 1
+  Measure = "FDR"
 )
 }
 \arguments{
@@ -44,17 +43,15 @@ mogamun.init(
 \item{MaxNumberOfAttempts}{maximum number of attempts to find compatible parents (default = 3)}
 
 \item{Measure}{measure to calculate the nodes scores and to determine which genes are differentially expressed (possible values PValue and FDR, default = FDR)}
-
-\item{NumberOfRunsToExecute}{number of runs (default = 1)}
 }
 \value{
-None
+EvolutionParameters
 }
 \description{
 initialize evolution parameters
 }
 \examples{
-mogamun.init(Generations = 5,
+EvolutionParameters <- mogamun.init(Generations = 5,
                PopSize = 100,
                MinNumberOfNodesPerIndividual = 15,
                MaxNumberOfNodesPerIndividual = 50,
@@ -65,7 +62,6 @@ mogamun.init(Generations = 5,
                ObjectiveNames = c("AverageNodesScore", "Density"),
                ThresholdDEG = 0.05,
                MaxNumberOfAttempts = 3,
-               Measure = "FDR",
-               NumberOfRunsToExecute = 1)
+               Measure = "FDR")
 
 }

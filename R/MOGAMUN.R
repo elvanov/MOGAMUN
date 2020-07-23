@@ -4,6 +4,7 @@
 # customized crossover and mutation operators (to never lose connectivity),
 # elitism of 1 and generational replacement, each node has a score associated
 
+
 #' @title mogamun.init
 #'
 #' @description initialize evolution parameters
@@ -20,12 +21,11 @@
 #' @param ThresholdDEG threshold to consider a gene as significantly differerentially expressed. Note: if there is a logFC available, it is also considered |logFC|>1  (default = 0.05)
 #' @param MaxNumberOfAttempts maximum number of attempts to find compatible parents (default = 3) 
 #' @param Measure measure to calculate the nodes scores and to determine which genes are differentially expressed (possible values PValue and FDR, default = FDR)
-#' @param NumberOfRunsToExecute number of runs (default = 1)
 #'
-#' @return None
+#' @return EvolutionParameters
 #'
 #' @examples
-#' mogamun.init(Generations = 5,
+#' EvolutionParameters <- mogamun.init(Generations = 1,
 #'                PopSize = 100,
 #'                MinNumberOfNodesPerIndividual = 15,
 #'                MaxNumberOfNodesPerIndividual = 50,
@@ -36,63 +36,74 @@
 #'                ObjectiveNames = c("AverageNodesScore", "Density"),
 #'                ThresholdDEG = 0.05,
 #'                MaxNumberOfAttempts = 3,
-#'                Measure = "FDR",
-#'                NumberOfRunsToExecute = 1)
+#'                Measure = "FDR")
 #'
 #' @export
+#' @import doParallel igraph foreach
+#' @importFrom foreach `%dopar%` foreach
+#' @importFrom utils write.table read.table combn read.csv write.csv 
+#' @importFrom stats runif qnorm
 mogamun.init <- function(Generations = 500,
-                          PopSize = 100,
-                          MinNumberOfNodesPerIndividual = 15,
-                          MaxNumberOfNodesPerIndividual = 50,
-                          CrossoverRate = 0.8,
-                          MutationRate = 0.1,
-                          JaccardSimilarityThreshold = 30,
-                          TournamentSize = 2,
-                          ObjectiveNames = c("AverageNodesScore", "Density"),
-                          ThresholdDEG = 0.05,
-                          MaxNumberOfAttempts = 3,
-                          Measure = "FDR",
-                          NumberOfRunsToExecute = 1) {
+                         PopSize = 100,
+                         MinNumberOfNodesPerIndividual = 15,
+                         MaxNumberOfNodesPerIndividual = 50,
+                         CrossoverRate = 0.8,
+                         MutationRate = 0.1,
+                         JaccardSimilarityThreshold = 30,
+                         TournamentSize = 2,
+                         ObjectiveNames = c("AverageNodesScore", "Density"),
+                         ThresholdDEG = 0.05,
+                         MaxNumberOfAttempts = 3,
+                         Measure = "FDR") {
+     
      # determines the parameters that will be used for the evolution
-     Generations <<- Generations # 500 # test with different values and check convergence
-     PopSize <<- PopSize # test with different values and check if the fitness improves significantly with different sizes
-     MinNumberOfNodesPerIndividual <<- MinNumberOfNodesPerIndividual
-     MaxNumberOfNodesPerIndividual <<- MaxNumberOfNodesPerIndividual
-     CrossoverRate <<- CrossoverRate
-     MutationRate <<- MutationRate # test with values from 0.1 - 0.5
-     JaccardSimilarityThreshold <<- JaccardSimilarityThreshold
-     TournamentSize <<- TournamentSize
-     ObjectiveNames <<- ObjectiveNames
-     ThresholdDEG <<- ThresholdDEG
-     MaxNumberOfAttempts <<- MaxNumberOfAttempts # this is used to find compatible parents and to create a valid size individual
-     Measure <<- Measure # determines how to get the DE genes, either by 'PValue' or 'FDR'
-     NumberOfRunsToExecute <<- NumberOfRunsToExecute
+     EvolutionParameters <- list(
+          Generations = Generations, # 500 # test with different values and check convergence
+          PopSize = PopSize, # test with different values and check if the fitness improves significantly with different sizes
+          MinNumberOfNodesPerIndividual = MinNumberOfNodesPerIndividual,
+          MaxNumberOfNodesPerIndividual = MaxNumberOfNodesPerIndividual,
+          CrossoverRate = CrossoverRate,
+          MutationRate = MutationRate, # test with values from 0.1 - 0.5
+          JaccardSimilarityThreshold = JaccardSimilarityThreshold,
+          TournamentSize = TournamentSize,
+          ObjectiveNames = ObjectiveNames,
+          ThresholdDEG = ThresholdDEG,
+          MaxNumberOfAttempts = MaxNumberOfAttempts, # this is used to find compatible parents and to create a valid size individual
+          Measure = Measure # determines how to get the DE genes, either by 'PValue' or 'FDR'
+     )
+ 
+     return(EvolutionParameters)    
 }
 
 #' @title mogamun.load.data
 #'
 #' @description Load the data to process
 #'
+#' @param EvolutionParameters evolution paramenters returned by mogamun.init()
 #' @param DifferentialExpressionPath full path to the differential expression results file (in CSV format). This file must contain It must contain at least the columns "gene" with the gene names, and ("PValue" or "FDR"). It can also contain "logFC"
 #' @param NodesScoresPath full path to an existing CSV file containing the nodes scores (columns "gene" and "nodescore"). NOTE. If the file does not exist, MOGAMUN will generate it in the provided path with the specified name
 #' @param NetworkLayersDir path of the folder that contains the networks that will be the layers of the multiplex
 #' @param Layers string of numbers, where the numbers correspond to the first character of the name of the network files
 #'
-#' @return None
+#' @return List with the data to process
 #'
 #' @examples
-#' mogamun.init()
-#' dgepath <- system.file("ExampleFiles/DifferentialExpressionData/Banerji2017.csv", package = "MOGAMUN")
-#' nodescorepath <- system.file("ExampleFiles/DifferentialExpressionData/Banerji2017_NodesScore.csv", package = "MOGAMUN")
-#' layerspath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
-#' mogamun.load.data(DifferentialExpressionPath = dgepath,
-#'                   NodesScoresPath = nodescorepath,
-#'                   NetworkLayersDir = layerspath,
+#' EvolutionParameters <- mogamun.init()
+#' DEGPath <- system.file("ExampleFiles/DE/Banerji2017.csv", package = "MOGAMUN")
+#' NodesScoresPath <- system.file("ExampleFiles/DE/Banerji2017_NodesScore.csv", package = "MOGAMUN")
+#' LayersPath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
+#' LoadedData <- mogamun.load.data(EvolutionParameters = EvolutionParameters,
+#'                   DifferentialExpressionPath = DEGPath,
+#'                   NodesScoresPath = NodesScoresPath,
+#'                   NetworkLayersDir = LayersPath,
 #'                   Layers = "123")
 #'
 #' @export
 
-mogamun.load.data <- function(DifferentialExpressionPath, NodesScoresPath, NetworkLayersDir, Layers) {
+mogamun.load.data <- function(EvolutionParameters, DifferentialExpressionPath, NodesScoresPath, NetworkLayersDir, Layers) {
+     Measure <- EvolutionParameters$Measure 
+     ThresholdDEG <- EvolutionParameters$ThresholdDEG
+     
      # full path for the DE results
      # NOTE. It must contain at least the columns "gene" and ("PValue" or "FDR"). It can also contain "logFC"
      DifferentialExpressionPath <- DifferentialExpressionPath
@@ -111,15 +122,15 @@ mogamun.load.data <- function(DifferentialExpressionPath, NodesScoresPath, Netwo
      LayersToUse <- Layers
 
      # load DE analysis results
-     DE_results <<- data.frame(read.csv(DifferentialExpressionPath))
-     DE_results <<- RemoveDuplicates_DE_Results(DE_results)
+     DE_results <- data.frame(read.csv(DifferentialExpressionPath))
+     DE_results <- RemoveDuplicates_DE_Results(DE_results)
 
      # get list of DEG
-     DEG <<- DE_results[DE_results$FDR < ThresholdDEG, ]
+     DEG <- DE_results[DE_results$FDR < ThresholdDEG, ]
 
      # if there is a column contanining the log(fold change), take it into account for the DEG
      if ("logFC" %in% colnames(DE_results)) {
-          DEG <<- DEG[abs(DE_results$logFC) > 1, ]
+          DEG <- DEG[abs(DE_results$logFC) > 1, ]
           
      }
 
@@ -129,240 +140,278 @@ mogamun.load.data <- function(DifferentialExpressionPath, NodesScoresPath, Netwo
      # if no nodes scores file was given
      if ( ! file.exists(NodesScoresPath) ) {
           # calculates the nodes scores for all the genes in DE analysis results
-          NodesScores <- as.numeric(GetNodesScoresOfListOfGenes(as.character(DE_results$gene), Measure))
+          NodesScores <- as.numeric(GetNodesScoresOfListOfGenes(DE_results, as.character(DE_results$gene), Measure))
 
           # makes a data frame with the gene names and their corresponding nodes scores
           # IMPORTANT!!! ANY gene not included in this list, has node score = 0
-          GenesWithNodesScores <<- data.frame("gene" = as.character(DE_results$gene),  "nodescore" = NodesScores)
+          GenesWithNodesScores <- data.frame("gene" = as.character(DE_results$gene),  "nodescore" = NodesScores)
 
           write.csv(GenesWithNodesScores, file = NodesScoresPath, row.names = FALSE)
      } else {
-          GenesWithNodesScores <<- data.frame(read.csv(NodesScoresPath, stringsAsFactors = FALSE))
+          GenesWithNodesScores <- data.frame(read.csv(NodesScoresPath, stringsAsFactors = FALSE))
      }
 
      # generates the multiplex and merged network
-     Multiplex <<- GenerateMultiplexNetwork(Files)
-     Merged <<- GenerateMergedNetwork(Files)
+     Multiplex <- GenerateMultiplexNetwork(Files)
+     Merged <- GenerateMergedNetwork(Files, Multiplex)
 
      # calculate density per layer of the multiplex
-     DensityPerLayerMultiplex <<- unlist(lapply(Multiplex, graph.density))
+     DensityPerLayerMultiplex <- unlist(lapply(Multiplex, graph.density))
+     
+     LoadedData <- 
+          c(EvolutionParameters, 
+          list(DE_results = DE_results,
+               DEG = DEG,
+               GenesWithNodesScores = GenesWithNodesScores,
+               Multiplex = Multiplex,
+               DensityPerLayerMultiplex = DensityPerLayerMultiplex,
+               Merged = Merged
+          )
+     )
+     
+     return (LoadedData)
 }
 
 #' @title mogamun.run
 #'
-#' @description Run the algo
+#' @description Run the algorithm with the specified values for the evolution parameters
 #'
-#' @param resultsDir outputs the results in the specified folder
+#' @param LoadedData list returned by mogamun.load.data()
+#' @param Cores to run MOGAMUN in parallel on the given number of cores (in line with the number of physical processor cores)
+#' @param NumberOfRunsToExecute number of runs (default = 1)
+#' @param ResultsDir outputs the results in the specified folder
 #'
 #' @return None
 #'
 #' @examples
-#' mogamun.init(Generations=0)
 #' 
-#' dgepath <- system.file("ExampleFiles/DifferentialExpressionData/Banerji2017.csv", package = "MOGAMUN")
-#' nodescorepath <- system.file("ExampleFiles/DifferentialExpressionData/Banerji2017_NodesScore.csv", package = "MOGAMUN")
-#' layerspath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
-#' mogamun.load.data(DifferentialExpressionPath = dgepath,
-#'                   NodesScoresPath = nodescorepath,
-#'                   NetworkLayersDir = layerspath,
+#' DEGPath <- system.file("ExampleFiles/DE/Banerji2017.csv", package = "MOGAMUN")
+#' NodesScoresPath <- system.file("ExampleFiles/DE/Banerji2017_NodesScore.csv", package = "MOGAMUN")
+#' LayersPath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
+#' EvolutionParameters <- mogamun.init(Generations = 1)
+#' LoadedData <- mogamun.load.data(EvolutionParameters = EvolutionParameters,
+#'                   DifferentialExpressionPath = DEGPath,
+#'                   NodesScoresPath = NodesScoresPath,
+#'                   NetworkLayersDir = LayersPath,
 #'                   Layers = "123")
-#' mogamun.run(resultsDir = tempdir())
+#' mogamun.run(LoadedData = LoadedData,
+#'                   Cores = 1,
+#'                   NumberOfRunsToExecute = 1,
+#'                   ResultsDir = tempdir()) 
 #'
 #' @export
-mogamun.run <- function(resultsDir = '.') {
+mogamun.run <- function(LoadedData,
+                        Cores = 1, 
+                        NumberOfRunsToExecute = 1,
+                        ResultsDir = '.') {
 
-     # uncomment the following two lines if executing multiple runs in parallel. Also uncomment the foreach of the main loop and comment the for
-     # library(doParallel)
-     # registerDoParallel(cores = 1) # should be in line with the number of physical processor cores
-
-     # Directory where results are stored
-     ResultsDir <- resultsDir
-
-     # create result folder for new experiment
-     ResultsPath <- paste0(ResultsDir, "Experiment_", Sys.Date(), "/")
-     dir.create(ResultsPath, recursive=T)
-
-     # defines the path and filename to store the results
-     BestIndividualsPath <- paste0(ResultsPath, "MOGAMUN_Results_")
-
-     ########################################################################################################################
-     ############# --------------------------------- M A I N   L O O P -------------------------#############################
-     ########################################################################################################################
-     # loop to execute the algorithm many times
-     # to measure the execution time: comment the following line if you are not benchmarking
-     #ptime <- system.time(
-
-     #foreach(RunNumber = 1:NumberOfRunsToExecute) %dopar% {
-     for (RunNumber in 1:NumberOfRunsToExecute) {
-          BestIndividualsFile <- paste0(BestIndividualsPath, "_Run_", RunNumber, ".txt")
-
-          # ---------------------------------
-          # ----- Create initial population of specified size
-          # ---------------------------------
-          MyInitialPopulation <- GenerateInitialPopulation(PopSize = PopSize, Multiplex = Multiplex)
-
-          # --------------------------------
-          # ----- Evaluate individuals
-          # ---------------------------------
-          FitnessData <- EvaluatePopulation(MyInitialPopulation, Multiplex, GenesWithNodesScores)
-
-          # generate data frame with the individuals and their fitness
-          Population <- data.frame("Individual" = I(MyInitialPopulation), FitnessData)
-
-          # obtain ranking and crowding distances
-          Population <- SortByNonDominationAndObtainCrowdingDistance(PopulationToSort = Population)
-
-          # --------------------------------
-          # ----- Evolution process starts here
-          # ---------------------------------
-          g <- 1  # initilizes the number of generation
-
-          StatisticsPerGeneration <- data.frame(matrix(ncol = 3, nrow = 0))
-          colnames(StatisticsPerGeneration) <- c(
-          "Generation",
-          "BestAverageNodesScore",
-          "BestDensity"
-          )
-
-          # evolution's loop for a given number of generations or untill all the individuals are in the first Pareto front
-          while (g <= Generations && !all(Population$Rank == 1)) {
-               MyNewPopulation <- vector("list", PopSize) # initialize an empty vector of the population size
-
-               # loop to generate the new population. In each loop, 2 children are created
-               for(i in seq(from=1, to=PopSize, by=2)) {
-               # initialize control variables
-               AttemptsToFindParents <- 0 # counter to control maximum number of attemps to find parents
-               KeepLooking <- TRUE # flag to keep looking for parents
-
-               while ( AttemptsToFindParents < MaxNumberOfAttempts & KeepLooking == TRUE ) {
-                 # --------------------------------
-                 # ----- Selection of parents (tournament)
-                 # ---------------------------------
-                 Parent1 <- TournamentSelection(TournamentSize, Population) # get parent 1
-
-                 ####### ---------------------------------------------------------------------
-                 # with the new crossover, only "near" parents can mate, so the second parent
-                 # has to be chosen with respect to the first one, therefore we need to filter
-                 # the population first
-                 ####### ---------------------------------------------------------------------
-
-                 # get the nodes' ids of parent 1, with respect to the big network
-                 NodesIDsOfParent1 <- sort( unlist(Parent1$Individual) )
-
-                 # get the list of all the nodes IDs in parent 1 and their neighbors
-                 AllNeighborsNodesOfParent1 <- GetNeighborsOfNodeList(NodesIDsOfParent1, Multiplex)
-
-                 # get the list of individuals in the population that contain at least one
-                 # node from the previous list (nodes in parent 1 and their neighbors)
-                 IndividualsInTheNeighborhoodOfParent1 <-
-                   unlist( sapply( 1:PopSize, function(X) {
-                       if (length(intersect(unlist(Population[X,"Individual"]), AllNeighborsNodesOfParent1)) > 0){
-                         X
-                       } } ) )
-
-                 # filter the original population to leave only those individuals that are near parent 1
-                 PotentialIndividualsForParent2 <- Population[IndividualsInTheNeighborhoodOfParent1, ]
-
-                 # verify if parent 1 is in the list of potential individuals for parent 2
-                 if ( rownames(Parent1) %in% rownames(PotentialIndividualsForParent2) ) {
-                   # if this is the case, remove it from the list
-                   IDofParent1InParent2List <- which(rownames(PotentialIndividualsForParent2) == rownames(Parent1))
-                   PotentialIndividualsForParent2 <- PotentialIndividualsForParent2[ -IDofParent1InParent2List, ]
-                 }
-
-                 # verify the length of the list of potential parent 2
-                 if ( nrow(PotentialIndividualsForParent2) >= 2 ) {
-
-                   # perform the tournament to choose parent 2, on the filtered population
-                   Parent2 <- TournamentSelection(TournamentSize, PotentialIndividualsForParent2) # get parent 2
-                   KeepLooking <- FALSE
-                 } else if (nrow(PotentialIndividualsForParent2) == 1) { # verify if there is 1 potential parent2
-                   # if only one individual is compatible with parent 1, use it as parent 2
-                   Parent2 <- PotentialIndividualsForParent2
-                   KeepLooking <- FALSE
-                 } else {
-                   # increment the number of attempts to find the parents
-                   AttemptsToFindParents <- AttemptsToFindParents + 1
-                 }
-               }
-
-               if (AttemptsToFindParents == MaxNumberOfAttempts) {
-                 ### ***** ADD NEW GENERATED RANDOM INDIVIDUAL *****
-                 print("Maximum number of attemps to find compatible parents reached. Adding two random individuals to the new population.")
-
-                 # generate two random individuals
-                 Children <- GenerateInitialPopulation(PopSize = 2, Multiplex = Multiplex)
-               } else {
-                 # --------------------------------
-                 # ----- Crossover
-                 # ---------------------------------
-                 Children <- Crossover(Parent1, Parent2)
-               }
-
-               # --------------------------------
-               # ----- Mutation
+     registerDoParallel(cores = Cores) # should be in line with the number of physical processor cores
+     
+     PopSize <- LoadedData$PopSize
+     Generations <- LoadedData$Generations
+     MaxNumberOfAttempts <- LoadedData$MaxNumberOfAttempts
+     TournamentSize <- LoadedData$TournamentSize
+     
+     if (exists("LoadedData")) {
+          Multiplex <- LoadedData$Multiplex
+          
+          # create result folder for new experiment
+          ResultsPath <- paste0(ResultsDir, "Experiment_", Sys.Date(), "/")
+          dir.create(ResultsPath, recursive=T)
+          
+          # defines the path and filename to store the results
+          BestIndividualsPath <- paste0(ResultsPath, "MOGAMUN_Results_")
+          
+          ########################################################################################################################
+          ############# --------------------------------- M A I N   L O O P -------------------------#############################
+          ########################################################################################################################
+          # loop to execute the algorithm many times
+          # to measure the execution time: comment the following line if you are not benchmarking
+          #ptime <- system.time(
+          
+          RunNumber <- 1
+          
+          foreach(RunNumber = 1:NumberOfRunsToExecute) %dopar% {
+          # for (RunNumber in 1:NumberOfRunsToExecute) {
+               BestIndividualsFile <- paste0(BestIndividualsPath, "_Run_", RunNumber, ".txt")
+               
                # ---------------------------------
-               Children <- Mutation(Children, Multiplex)
-
-               # NOTE. Doing "MyNewPopulation[i] <- list(Children[[1]])" and "MyNewPopulation[i] <- Children[1]" is equivalent
-               MyNewPopulation[i] <- Children[1] # add individual to the population
-               MyNewPopulation[i+1] <- Children[2] # add individual to the population
-               }
-
-               # ----- Here we already have a whole new population
-               # evaluate offspring
-               FitnessData <- EvaluatePopulation(MyNewPopulation, Multiplex, GenesWithNodesScores)
-
+               # ----- Create initial population of specified size
+               # ---------------------------------
+               MyInitialPopulation <- GenerateInitialPopulation(PopSize, Multiplex, LoadedData)
+               
+               # --------------------------------
+               # ----- Evaluate individuals
+               # ---------------------------------
+               FitnessData <- EvaluatePopulation(MyInitialPopulation, Multiplex, LoadedData)
+               
                # generate data frame with the individuals and their fitness
-               NewPopulation <-
-                    data.frame(
-                      "Individual" = I(MyNewPopulation),
-                      FitnessData,
-                      Rank = rep(0, nrow(FitnessData)),
-                      CrowdingDistance = rep(0, nrow(FitnessData))
+               Population <- data.frame("Individual" = I(MyInitialPopulation), FitnessData)
+               
+               # obtain ranking and crowding distances
+               Population <- 
+                    SortByNonDominationAndObtainCrowdingDistance(
+                         PopulationToSort = Population, 
+                         LoadedData = LoadedData
                     )
-
+               
                # --------------------------------
-               # ----- Replacement
+               # ----- Evolution process starts here
                # ---------------------------------
-               NewPopulationForReplacement <- Replacement(Parents = Population, Children = NewPopulation)
-
-               # replace old population
-               Population <- NewPopulationForReplacement
-
-               StatisticsPerGeneration[nrow(StatisticsPerGeneration) + 1, ] <-
-               c(g, # "Generation"
-                 max(Population$AverageNodesScore), # "BestAverageNodesScore"
-                 max(Population$Density) # "BestDensity"
+               g <- 1  # initilizes the number of generation
+               
+               StatisticsPerGeneration <- data.frame(matrix(ncol = 3, nrow = 0))
+               colnames(StatisticsPerGeneration) <- c(
+                    "Generation",
+                    "BestAverageNodesScore",
+                    "BestDensity"
                )
-
-               print(paste0("Run ", RunNumber, ". Generation ", g, " completed"))
-
-               g <- g + 1 # increments the generation
-          }     ### end of      while (g <= Generations)
-
-
-          # saves the statistics of the population
-          write.csv(
-          StatisticsPerGeneration,
-          file = paste0(BestIndividualsPath,
-                      "StatisticsPerGeneration_Run",
-                      RunNumber,
-                      ".csv"), row.names = FALSE
-          )
-
-          # saves the best individuals of the final population
-          SaveTheBestIndividualsFromFinalPopulation(
-               BestIndividualsFile,
-               Population,
-               PopSize,
-               Multiplex[[1]] # this layer will be used to get the names of the corresponding genes, but
-               # actually all the layers have the nodes in the same order, so it is indistinct
-          )
-
-          print(paste0("FINISH TIME, RUN ", RunNumber, ": ", Sys.time()))
-
-          gc()
+               
+               # evolution's loop for a given number of generations or untill all the individuals are in the first Pareto front
+               while (g <= Generations && !all(Population$Rank == 1)) {
+                    MyNewPopulation <- vector("list", PopSize) # initialize an empty vector of the population size
+                    
+                    # loop to generate the new population. In each loop, 2 children are created
+                    for(i in seq(from=1, to=PopSize, by=2)) {
+                         # initialize control variables
+                         AttemptsToFindParents <- 0 # counter to control maximum number of attemps to find parents
+                         KeepLooking <- TRUE # flag to keep looking for parents
+                         
+                         while ( AttemptsToFindParents < MaxNumberOfAttempts & KeepLooking == TRUE ) {
+                              # --------------------------------
+                              # ----- Selection of parents (tournament)
+                              # ---------------------------------
+                              Parent1 <- TournamentSelection(TournamentSize, Population) # get parent 1
+                              
+                              ####### ---------------------------------------------------------------------
+                              # with the new crossover, only "near" parents can mate, so the second parent
+                              # has to be chosen with respect to the first one, therefore we need to filter
+                              # the population first
+                              ####### ---------------------------------------------------------------------
+                              
+                              # get the nodes' ids of parent 1, with respect to the big network
+                              NodesIDsOfParent1 <- sort( unlist(Parent1$Individual) )
+                              
+                              # get the list of all the nodes IDs in parent 1 and their neighbors
+                              AllNeighborsNodesOfParent1 <- GetNeighborsOfNodeList(NodesIDsOfParent1, Multiplex)
+                              
+                              # get the list of individuals in the population that contain at least one
+                              # node from the previous list (nodes in parent 1 and their neighbors)
+                              IndividualsInTheNeighborhoodOfParent1 <-
+                                   unlist( sapply( 1:PopSize, function(X) {
+                                        if (length(intersect(unlist(Population[X,"Individual"]), AllNeighborsNodesOfParent1)) > 0){
+                                             X
+                                        } } ) )
+                              
+                              # filter the original population to leave only those individuals that are near parent 1
+                              PotentialIndividualsForParent2 <- Population[IndividualsInTheNeighborhoodOfParent1, ]
+                              
+                              # verify if parent 1 is in the list of potential individuals for parent 2
+                              if ( rownames(Parent1) %in% rownames(PotentialIndividualsForParent2) ) {
+                                   # if this is the case, remove it from the list
+                                   IDofParent1InParent2List <- which(rownames(PotentialIndividualsForParent2) == rownames(Parent1))
+                                   PotentialIndividualsForParent2 <- PotentialIndividualsForParent2[ -IDofParent1InParent2List, ]
+                              }
+                              
+                              # verify the length of the list of potential parent 2
+                              if ( nrow(PotentialIndividualsForParent2) >= 2 ) {
+                                   
+                                   # perform the tournament to choose parent 2, on the filtered population
+                                   Parent2 <- TournamentSelection(TournamentSize, PotentialIndividualsForParent2) # get parent 2
+                                   KeepLooking <- FALSE
+                              } else if (nrow(PotentialIndividualsForParent2) == 1) { # verify if there is 1 potential parent2
+                                   # if only one individual is compatible with parent 1, use it as parent 2
+                                   Parent2 <- PotentialIndividualsForParent2
+                                   KeepLooking <- FALSE
+                              } else {
+                                   # increment the number of attempts to find the parents
+                                   AttemptsToFindParents <- AttemptsToFindParents + 1
+                              }
+                         }
+                         
+                         if (AttemptsToFindParents == MaxNumberOfAttempts) {
+                              ### ***** ADD NEW GENERATED RANDOM INDIVIDUAL *****
+                              print("Maximum number of attemps to find compatible parents reached. Adding two random individuals to the new population.")
+                              
+                              # generate two random individuals
+                              Children <- GenerateInitialPopulation(PopSize = 2, Multiplex = Multiplex, LoadedData = LoadedData)
+                         } else {
+                              # --------------------------------
+                              # ----- Crossover
+                              # ---------------------------------
+                              Children <- Crossover(Parent1, Parent2, LoadedData)
+                         }
+                         
+                         # --------------------------------
+                         # ----- Mutation
+                         # ---------------------------------
+                         Children <- Mutation(Children, Multiplex, LoadedData)
+                         
+                         # NOTE. Doing "MyNewPopulation[i] <- list(Children[[1]])" and "MyNewPopulation[i] <- Children[1]" is equivalent
+                         MyNewPopulation[i] <- Children[1] # add individual to the population
+                         MyNewPopulation[i+1] <- Children[2] # add individual to the population
+                    }
+                    
+                    # ----- Here we already have a whole new population
+                    # evaluate offspring
+                    FitnessData <- EvaluatePopulation(MyNewPopulation, Multiplex, LoadedData)
+                    
+                    # generate data frame with the individuals and their fitness
+                    NewPopulation <-
+                         data.frame(
+                              "Individual" = I(MyNewPopulation),
+                              FitnessData,
+                              Rank = rep(0, nrow(FitnessData)),
+                              CrowdingDistance = rep(0, nrow(FitnessData))
+                         )
+                    
+                    # --------------------------------
+                    # ----- Replacement
+                    # ---------------------------------
+                    NewPopulationForReplacement <- Replacement(Parents = Population, Children = NewPopulation, LoadedData = LoadedData)
+                    
+                    # replace old population
+                    Population <- NewPopulationForReplacement
+                    
+                    StatisticsPerGeneration[nrow(StatisticsPerGeneration) + 1, ] <-
+                         c(g, # "Generation"
+                           max(Population$AverageNodesScore), # "BestAverageNodesScore"
+                           max(Population$Density) # "BestDensity"
+                         )
+                    
+                    print(paste0("Run ", RunNumber, ". Generation ", g, " completed"))
+                    
+                    g <- g + 1 # increments the generation
+               }     ### end of      while (g <= Generations)
+               
+               
+               # saves the statistics of the population
+               write.csv(
+                    StatisticsPerGeneration,
+                    file = paste0(BestIndividualsPath,
+                                  "StatisticsPerGeneration_Run",
+                                  RunNumber,
+                                  ".csv"), row.names = FALSE
+               )
+               
+               # saves the best individuals of the final population
+               SaveTheBestIndividualsFromFinalPopulation(
+                    BestIndividualsFile,
+                    Population,
+                    PopSize,
+                    Multiplex[[1]] # this layer will be used to get the names of the corresponding genes, but
+                    # actually all the layers have the nodes in the same order, so it is indistinct
+               )
+               
+               print(paste0("FINISH TIME, RUN ", RunNumber, ": ", Sys.time()))
+               
+               gc()
+          }          
+          
+     } else {
+          if (!exists(LoadedData)) {
+               print ("Error! Missing parameter: LoadedData ")
+          }
      }
 }
 

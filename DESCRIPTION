@@ -9,5 +9,5 @@ Description: A Multi-Objective Genetic Algorithm to Find Active Modules from Mul
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
-Depends: doParallel (>= 1.0.0), igraph (>= 1.2.0.0)
-RoxygenNote: 7.1.0
+Depends: doParallel (>= 1.0.0), igraph (>= 1.2.0.0), stats, utils, foreach
+RoxygenNote: 7.1.1

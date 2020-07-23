@@ -61,8 +61,9 @@ GenerateMultiplexNetwork <- function(Files) {
 
 # definition of the function that generates the merged network
 # INPUTS: Files - list of file names that contain the biological networks data
+#         Multiplex - multiplex network
 # OUTPUT: Merged network (igraph object)
-GenerateMergedNetwork <- function(Files) {
+GenerateMergedNetwork <- function(Files, Multiplex) {
   # declare empty data frame for the edges of the merged
   Merged <- data.frame(V1 = character(), V2 = character(), Layer = character())
 
@@ -106,10 +107,11 @@ GetListOfAllNodesPresentInLayers <- function(Files) {
 
 
 # definition of the function that calculates the individual node score for a list of genes
-# INPUTS: ListOfGenes - list of gene names to calculate the node score
+# INPUTS: DE_results - differential expression analysis results 
+#         ListOfGenes - list of gene names to calculate the node score
 #         Measure - either consider 'PValue' or 'FDR' for the node score calculus
 # OUTPUT: nodes scores
-GetNodesScoresOfListOfGenes <- function(ListOfGenes, Measure) {
+GetNodesScoresOfListOfGenes <- function(DE_results, ListOfGenes, Measure) {
 
   ListOfGenes <- unique(ListOfGenes)
 
@@ -142,14 +144,22 @@ GetNodesScoresOfListOfGenes <- function(ListOfGenes, Measure) {
 # definition of the function to generate the initial population
 # INPUTS: PopSize - population size, i.e. number of individuals to create
 #         Multiplex - multiplex network (it is the search space)
+#         LoadedData - general data 
 # OUTPUT: Population of size PopSize with integer codification
-GenerateInitialPopulation <- function (PopSize, Multiplex) {
+GenerateInitialPopulation <- function (PopSize, Multiplex, LoadedData) {
+  MinNumberOfNodesPerIndividual <- LoadedData$MinNumberOfNodesPerIndividual
+  MaxNumberOfNodesPerIndividual <- LoadedData$MaxNumberOfNodesPerIndividual
+  
   MyPopulation <- vector("list", PopSize) # initialize an empty vector of the population size
   for (i in 1:PopSize) { # loop from 1 to the total population size
     # randomly determine the size of the individual, i.e., the number of nodes it will contain
-    SizeOfIndividual <- sample(x = MinNumberOfNodesPerIndividual:MaxNumberOfNodesPerIndividual, size = 1)
+    SizeOfIndividual <- 
+         sample(
+              x = MinNumberOfNodesPerIndividual:MaxNumberOfNodesPerIndividual, 
+              size = 1
+              )
 
-    Root <- PickRandomRoot(MyMultiplex = Multiplex)
+    Root <- PickRandomRoot(MyMultiplex = Multiplex, LoadedData = LoadedData)
 
     # use DFS (Depth First Search) from the chosen root, until the size of the individual is reached
     # NOTE. Only DFS will be used in the initial population because it allows to go further from the root
@@ -160,7 +170,8 @@ GenerateInitialPopulation <- function (PopSize, Multiplex) {
       DFS_iterative_Multiplex(
         MyMultiplex = Multiplex,
         Root = Root,
-        SizeOfIndividual = SizeOfIndividual
+        SizeOfIndividual = SizeOfIndividual, 
+        LoadedData = LoadedData
       )
 
     # add individual to the population
@@ -176,8 +187,12 @@ GenerateInitialPopulation <- function (PopSize, Multiplex) {
 #         Multiplex - the multiplex network
 #         Root - name of the node that will be used as root for the search
 #         SizeOfIndividual - desired length of the search
+#         LoadedData - general data 
 # OUTPUT: Individual with the desired length
-DFS_iterative_Multiplex <- function (MyMultiplex, Root, SizeOfIndividual) {
+DFS_iterative_Multiplex <- function (MyMultiplex, Root, SizeOfIndividual, LoadedData) {
+  MaxNumberOfAttempts <- LoadedData$MaxNumberOfAttempts
+  Multiplex <- LoadedData$Multiplex
+  
   KeepLooking <- TRUE # flag to control the execution of the current function
   Attempts <- 0
 
@@ -250,10 +265,10 @@ DFS_iterative_Multiplex <- function (MyMultiplex, Root, SizeOfIndividual) {
       # if no "good" root was found in the maximum number of attempts, generate a random individual with the original multiplex
       if (Attempts > MaxNumberOfAttempts) {
         MyMultiplex <- Multiplex # use the big original multiplex
-        Root <- PickRandomRoot(MyMultiplex = MyMultiplex) # pick a random root with the big original multiplex
+        Root <- PickRandomRoot(MyMultiplex, LoadedData) # pick a random root with the big original multiplex
       } else { # if we still have attempts left
         Attempts <- Attempts + 1 # increment number of attempts
-        Root <- PickRandomRoot(MyMultiplex = MyMultiplex) # pick a root with a potentially reduced version of the multiplex
+        Root <- PickRandomRoot(MyMultiplex, LoadedData) # pick a root with a potentially reduced version of the multiplex
       }
     } else { # if a good root was found and the individual has the desired size
       KeepLooking <- FALSE # deactivate flag to stop the search
@@ -277,8 +292,11 @@ DFS_iterative_Multiplex <- function (MyMultiplex, Root, SizeOfIndividual) {
 
 # Definition of the function to pick a random node to be the root of a search. It prefers DE genes over non-DE
 # INPUT:  MyMultiplex - network containing all the available nodes
+#         LoadedData - general data 
 # OUTPUT: Root node
-PickRandomRoot <- function (MyMultiplex) {
+PickRandomRoot <- function (MyMultiplex, LoadedData) {
+  DEG <- LoadedData$DEG
+  
   SearchSpaceGenes <- names( V(MyMultiplex[[1]]) )
 
   # get the list of all the DE genes (from the whole DE analysis test)
@@ -303,9 +321,9 @@ PickRandomRoot <- function (MyMultiplex) {
 # definition of the function to evaluate a whole population
 # INPUTS: MyPopulation - population to evaluate (only the codes of the individuals)
 #         Multiplex - network to which the population belongs to
-#         GenesWithNodesScores - nodes scores of the genes
+#         LoadedData - general data 
 # OUTPUT: Evaluation of the individual (fitness)
-EvaluatePopulation <- function (MyPopulation, Multiplex, GenesWithNodesScores) {
+EvaluatePopulation <- function (MyPopulation, Multiplex, LoadedData) {
 
   FitnessData <-
        do.call(
@@ -316,7 +334,7 @@ EvaluatePopulation <- function (MyPopulation, Multiplex, GenesWithNodesScores) {
                       EvaluateIndividualAndReturnAllFitnessData(
                            Individual = MyPopulation[[i]],
                            MultiplexNetwork = Multiplex,
-                           VerticesWithNodesScores = GenesWithNodesScores
+                           LoadedData = LoadedData
                       )
                  }
             ))
@@ -329,10 +347,13 @@ EvaluatePopulation <- function (MyPopulation, Multiplex, GenesWithNodesScores) {
 # definition of the function to evaluate an individual
 # INPUTS: Individual - individual to evaluate
 #         MultiplexNetwork - network to which the individual belongs to
-#         VerticesWithNodesScores - nodes scores of the genes
+#         LoadedData - general data 
 # OUTPUT: Evaluation of the individual (fitness)
-EvaluateIndividualAndReturnAllFitnessData <- function (Individual, MultiplexNetwork, VerticesWithNodesScores) {
+EvaluateIndividualAndReturnAllFitnessData <- function (Individual, MultiplexNetwork, LoadedData) {
 
+  VerticesWithNodesScores <- LoadedData$GenesWithNodesScores
+  DensityPerLayerMultiplex <- LoadedData$DensityPerLayerMultiplex
+  
   # verifies that there is at least one node present in the individual
   if ( length(Individual) > 0 ) {
 
@@ -419,32 +440,6 @@ fastNonDominatedSorting <-   function(inputData) {
 
 
 
-# function to check for dominance of Ind1 over Ind2
-# INPUTS: Ind1 - individual 1
-#         Ind2 - individual 2
-# OUTPUT: Dominance flag. 0: non-dominance, 1: Ind1 dominates Ind2, 2: Ind2 dominates Ind1
-CheckDominance <- function(Ind1, Ind2) {
-
-  # save all the fitness functions (objectives) values of the individuals
-  FitnessFunctionsInd1 <- Ind1[, (colnames(Ind1) %in% ObjectiveNames)]
-  FitnessFunctionsInd2 <- Ind2[, (colnames(Ind2) %in% ObjectiveNames)]
-
-  #### In order for Ind1 to dominate Ind2, Ind1 has to have fitness functions values higher or equal
-  #### than Ind2 for all the objectives, and it has to be better in at least one, i.e., have a higher
-  #### value in at least one fitness function
-
-  if (all(FitnessFunctionsInd1 >= FitnessFunctionsInd2) && any(FitnessFunctionsInd1 > FitnessFunctionsInd2)) {
-    Dominance <- 1 # individual 1 dominates individual 2
-  } else if(all(FitnessFunctionsInd2 >= FitnessFunctionsInd1) && any(FitnessFunctionsInd2 > FitnessFunctionsInd1)) {
-    Dominance <- 2 # individual 2 dominates individual 1
-  } else {
-    Dominance <- 0 # no dominance between individuals 1 and 2
-  }
-
-  return(Dominance)
-}
-
-
 # definition of the function to perform a tournament selection
 # INPUTS: TournamentSize - size of the tournament
 #         PopulationForTournament - population to do the tournament with
@@ -503,8 +498,15 @@ GetNeighborsOfNodeList <- function(NodeList, Multiplex) {
 # definition of the function to perform crossover
 # INPUTS: Parent1 - first parent to cross
 #         Parent2 - second parent to cross
+#         LoadedData - general data 
 # OUTPUT: Two children (a single connected component per child)
-Crossover <- function (Parent1, Parent2) {
+Crossover <- function (Parent1, Parent2, LoadedData) {
+  MaxNumberOfAttempts <- LoadedData$MaxNumberOfAttempts
+  MinNumberOfNodesPerIndividual <- LoadedData$MinNumberOfNodesPerIndividual
+  MaxNumberOfNodesPerIndividual <- LoadedData$MaxNumberOfNodesPerIndividual
+  CrossoverRate <- LoadedData$CrossoverRate
+  Multiplex <- LoadedData$Multiplex
+  
   Children <- NULL # intialize empty list
 
   p <- runif(1, 0, 1) # generate a random number between 0 and 1
@@ -535,7 +537,7 @@ Crossover <- function (Parent1, Parent2) {
         )
 
         # randomly pick the root of the child
-        Root <- PickRandomRoot(MyMultiplex = Multiplex_JointParents)
+        Root <- PickRandomRoot(MyMultiplex = Multiplex_JointParents, LoadedData = LoadedData)
 
         # randomly pick the search method: DFS (Depth First Search) or BFS (Breadth First Search)
         SearchMethod <- sample(c("DFS", "BFS"), 1)
@@ -547,7 +549,8 @@ Crossover <- function (Parent1, Parent2) {
           DFS <- DFS_iterative_Multiplex(
             MyMultiplex = Multiplex_JointParents,    # use the filtered version of the multiplex for the crossover
             Root = Root,
-            SizeOfIndividual = SizeOfIndividual
+            SizeOfIndividual = SizeOfIndividual, 
+            LoadedData = LoadedData
           )
 
           # add child to the population
@@ -557,7 +560,8 @@ Crossover <- function (Parent1, Parent2) {
           BFS <- BFS_iterative_Multiplex(
             MyMultiplex = Multiplex_JointParents,    # use the filtered version of the multiplex for the crossover
             Root = Root,
-            SizeOfIndividual = SizeOfIndividual
+            SizeOfIndividual = SizeOfIndividual, 
+            LoadedData = LoadedData
           )
 
           # add child to the population
@@ -579,8 +583,11 @@ Crossover <- function (Parent1, Parent2) {
 #         Multiplex - the multiplex network
 #         Root - name of the node that will be used as root for the search
 #         SizeOfIndividual - desired length of the search
+#         LoadedData - general data 
 # OUTPUT: Individual with the desired length
-BFS_iterative_Multiplex <- function (MyMultiplex, Root, SizeOfIndividual) {
+BFS_iterative_Multiplex <- function (MyMultiplex, Root, SizeOfIndividual, LoadedData) {
+  MaxNumberOfAttempts <- LoadedData$MaxNumberOfAttempts
+  Multiplex <- LoadedData$Multiplex
   KeepLooking <- TRUE # flag to control the execution of the current function
   Attempts <- 0
 
@@ -650,10 +657,10 @@ BFS_iterative_Multiplex <- function (MyMultiplex, Root, SizeOfIndividual) {
       # if no "good" root was found in the maximum number of attempts, generate a random individual with the original multiplex
       if (Attempts > MaxNumberOfAttempts) {
         MyMultiplex <- Multiplex # use the big original multiplex
-        Root <- PickRandomRoot(MyMultiplex = MyMultiplex) # pick a random root with the big original multiplex
+        Root <- PickRandomRoot(MyMultiplex, LoadedData) # pick a random root with the big original multiplex
       } else { # if we still have attempts left
         Attempts <- Attempts + 1 # increment number of attempts
-        Root <- PickRandomRoot(MyMultiplex = MyMultiplex) # pick a root with a potentially reduced version of the multiplex
+        Root <- PickRandomRoot(MyMultiplex, LoadedData) # pick a root with a potentially reduced version of the multiplex
       }
     } else { # if a good root was found and the individual has the desired size
       KeepLooking <- FALSE # deactivate flag to stop the search
@@ -710,8 +717,13 @@ GetNetworkIDofListOfNodes <- function(ListOfNodes, GlobalNetwork) {
 # definition of the function to perform mutation
 # INPUTS: Individuals - the individuals to perform mutation with
 #         Multiplex - network to where the individuals belong to
+#         LoadedData - general data 
 # OUTPUT: Two mutated individuals
-Mutation <- function (Individuals, Multiplex) {
+Mutation <- function (Individuals, Multiplex, LoadedData) {
+  Merged <- LoadedData$Merged
+  DEG <- LoadedData$DEG
+  MutationRate <- LoadedData$MutationRate
+  
   Mutants <- NULL
 
   for (i in 1:length(Individuals)) { # loop through all the individuals to be mutated
@@ -861,13 +873,16 @@ Mutation <- function (Individuals, Multiplex) {
 # definition of the function to perform replacement
 # INPUTS: Parents - individuals from the previous generation
 #         Children - individuals from the new generation
+#         LoadedData - general data 
 # OUTPUT: The selected invididuals to keep for the next generation
-Replacement <- function (Parents, Children) {
+Replacement <- function (Parents, Children, LoadedData) {
+  PopSize <- LoadedData$PopSize
+     
   # combine the new population (offspring) with old population (parents)
   CombinedPopulation <- rbind(Parents, Children)
 
   ## CHECK FOR DUPLICATED INDIVIDUALS HERE AND REPLACE THEM FOR NEW GENERATED ONES INSTEAD
-  CombinedPopulation <- ReplaceDuplicatedIndividualsWithRandomOnes(CombinedPopulation)
+  CombinedPopulation <- ReplaceDuplicatedIndividualsWithRandomOnes(CombinedPopulation, LoadedData)
 
   # order combined population by rank
   CombinedPopulation <- CombinedPopulation[with(CombinedPopulation, order(Rank)), ]
@@ -893,9 +908,12 @@ Replacement <- function (Parents, Children) {
 # definition of the function that replaces all duplicated individuals and those above the permitted threshold of similarity
 # with newly generated random individuals
 # INPUT:  CombinedPopulation - Population of size 2*N that corresponds to the union of parents and children
+#         LoadedData - general data 
 # OUTPUT: A garanteed diverse population of size 2*N
-ReplaceDuplicatedIndividualsWithRandomOnes <- function(CombinedPopulation) {
+ReplaceDuplicatedIndividualsWithRandomOnes <- function(CombinedPopulation, LoadedData) {
   DiversePopulation <- CombinedPopulation
+  JaccardSimilarityThreshold <- LoadedData$JaccardSimilarityThreshold
+  Multiplex <- LoadedData$Multiplex
 
   #######################################################################
   ############## ---- BEGINS OPTIMIZATION OF CODE ---- ##################
@@ -931,7 +949,7 @@ ReplaceDuplicatedIndividualsWithRandomOnes <- function(CombinedPopulation) {
 
     # non-dominated sorting and crowding distance calculus
     PopulationWithCrowdingDistance <-
-         SortByNonDominationAndObtainCrowdingDistance(PopulationToSort = DiversePopulation)
+         SortByNonDominationAndObtainCrowdingDistance(PopulationToSort = DiversePopulation, LoadedData = LoadedData)
 
     # loop through all the "duplicated" pairs of individuals
     i <- 1
@@ -980,17 +998,21 @@ ReplaceDuplicatedIndividualsWithRandomOnes <- function(CombinedPopulation) {
 
   # generate as many new individuals as duplicated ones
   MyNewIndividuals <-
-    GenerateInitialPopulation(PopSize = (nrow(CombinedPopulation) - nrow(DiversePopulation)), Multiplex = Multiplex)
+    GenerateInitialPopulation(
+         PopSize = (nrow(CombinedPopulation) - nrow(DiversePopulation)), 
+         Multiplex = Multiplex,
+         LoadedData = LoadedData
+         )
 
   # Evaluate individuals
-  FitnessData <- EvaluatePopulation(MyNewIndividuals, Multiplex, GenesWithNodesScores)
+  FitnessData <- EvaluatePopulation(MyNewIndividuals, Multiplex, LoadedData)
 
   DiversePopulation <-
        rbind(DiversePopulation,
              data.frame("Individual" = I(MyNewIndividuals), FitnessData, Rank = 0, CrowdingDistance = 0)
              )
 
-  DiversePopulation <- SortByNonDominationAndObtainCrowdingDistance(PopulationToSort = DiversePopulation)
+  DiversePopulation <- SortByNonDominationAndObtainCrowdingDistance(PopulationToSort = DiversePopulation, LoadedData = LoadedData)
 
   return(DiversePopulation)
 }
@@ -998,8 +1020,11 @@ ReplaceDuplicatedIndividualsWithRandomOnes <- function(CombinedPopulation) {
 
 # definition of the function that performs the fast non dominated sorting and the calculus of the crowding distance
 # INPUT:  PopulationToSort - Unsorted population
+#         LoadedData - general data 
 # OUTPUT: Sorted population with ranking and crowding distance
-SortByNonDominationAndObtainCrowdingDistance <- function(PopulationToSort) {
+SortByNonDominationAndObtainCrowdingDistance <- function(PopulationToSort, LoadedData) {
+  ObjectiveNames <- LoadedData$ObjectiveNames
+     
   # sort individuals by non domination
   Ranking <-
     fastNonDominatedSorting(PopulationToSort[, (colnames(PopulationToSort) %in% ObjectiveNames)])

@@ -17,32 +17,36 @@
 #' @param MutationRate rate for the mutation (default = 0.1)
 #' @param JaccardSimilarityThreshold subnetworks over this Jaccard similarity threshold are considered as duplicated (default = 30)
 #' @param TournamentSize size of the tournament (default = 2)
-#' @param ObjectiveNames list containing the names of the objectives (default =  c("AverageNodesScore", "Density"))
+#' @param Measure measure to calculate the nodes scores and to determine which genes are differentially expressed (possible values PValue and FDR, default = FDR)
 #' @param ThresholdDEG threshold to consider a gene as significantly differerentially expressed. Note: if there is a logFC available, it is also considered |logFC|>1  (default = 0.05)
 #' @param MaxNumberOfAttempts maximum number of attempts to find compatible parents (default = 3) 
-#' @param Measure measure to calculate the nodes scores and to determine which genes are differentially expressed (possible values PValue and FDR, default = FDR)
 #'
 #' @return EvolutionParameters
 #'
 #' @examples
 #' EvolutionParameters <- mogamun.init(Generations = 1,
-#'                PopSize = 100,
+#'                PopSize = 10,
 #'                MinNumberOfNodesPerIndividual = 15,
 #'                MaxNumberOfNodesPerIndividual = 50,
 #'                CrossoverRate = 0.8,
 #'                MutationRate = 0.1,
 #'                JaccardSimilarityThreshold = 30,
 #'                TournamentSize = 2,
-#'                ObjectiveNames = c("AverageNodesScore", "Density"),
+#'                Measure = "FDR",
 #'                ThresholdDEG = 0.05,
-#'                MaxNumberOfAttempts = 3,
-#'                Measure = "FDR")
+#'                MaxNumberOfAttempts = 3)
 #'
 #' @export
-#' @import doParallel igraph foreach
+#' @import doParallel igraph stringr 
 #' @importFrom foreach `%dopar%` foreach
 #' @importFrom utils write.table read.table combn read.csv write.csv 
 #' @importFrom stats runif qnorm
+#' @importFrom RCy3 cytoscapePing createNetworkFromDataFrames loadTableData 
+#' @importFrom RCy3 setEdgeColorMapping setNodeColorMapping setNodeBorderColorMapping 
+#' @importFrom RCy3 setNodeBorderWidthMapping layoutNetwork createColumnFilter createSubnetwork 
+#' @importFrom RCy3 closeSession saveSession
+#' @importFrom graphics boxplot plot legend
+#' @importFrom grDevices svg dev.off rainbow
 mogamun.init <- function(Generations = 500,
                          PopSize = 100,
                          MinNumberOfNodesPerIndividual = 15,
@@ -51,10 +55,9 @@ mogamun.init <- function(Generations = 500,
                          MutationRate = 0.1,
                          JaccardSimilarityThreshold = 30,
                          TournamentSize = 2,
-                         ObjectiveNames = c("AverageNodesScore", "Density"),
+                         Measure = "FDR",
                          ThresholdDEG = 0.05,
-                         MaxNumberOfAttempts = 3,
-                         Measure = "FDR") {
+                         MaxNumberOfAttempts = 3) {
      
      # determines the parameters that will be used for the evolution
      EvolutionParameters <- list(
@@ -66,10 +69,10 @@ mogamun.init <- function(Generations = 500,
           MutationRate = MutationRate, # test with values from 0.1 - 0.5
           JaccardSimilarityThreshold = JaccardSimilarityThreshold,
           TournamentSize = TournamentSize,
-          ObjectiveNames = ObjectiveNames,
+          ObjectiveNames = c("AverageNodesScore", "Density"),
+          Measure = Measure, # determines how to get the DE genes, either by 'PValue' or 'FDR'
           ThresholdDEG = ThresholdDEG,
-          MaxNumberOfAttempts = MaxNumberOfAttempts, # this is used to find compatible parents and to create a valid size individual
-          Measure = Measure # determines how to get the DE genes, either by 'PValue' or 'FDR'
+          MaxNumberOfAttempts = MaxNumberOfAttempts # this is used to find compatible parents and to create a valid size individual
      )
  
      return(EvolutionParameters)    
@@ -88,19 +91,25 @@ mogamun.init <- function(Generations = 500,
 #' @return List with the data to process
 #'
 #' @examples
-#' EvolutionParameters <- mogamun.init()
-#' DEGPath <- system.file("ExampleFiles/DE/Banerji2017.csv", package = "MOGAMUN")
-#' NodesScoresPath <- system.file("ExampleFiles/DE/Banerji2017_NodesScore.csv", package = "MOGAMUN")
+#' EvolutionParameters <- mogamun.init(Generations = 1, PopSize = 10)
+#' DEGPath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
+#' NodesScoresPath <- system.file("ExampleFiles/DE/Sample_DE_NodesScore.csv", package = "MOGAMUN")
 #' LayersPath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
 #' LoadedData <- mogamun.load.data(EvolutionParameters = EvolutionParameters,
 #'                   DifferentialExpressionPath = DEGPath,
 #'                   NodesScoresPath = NodesScoresPath,
 #'                   NetworkLayersDir = LayersPath,
-#'                   Layers = "123")
+#'                   Layers = "23")
 #'
 #' @export
 
-mogamun.load.data <- function(EvolutionParameters, DifferentialExpressionPath, NodesScoresPath, NetworkLayersDir, Layers) {
+mogamun.load.data <- 
+     function(
+          EvolutionParameters, 
+          DifferentialExpressionPath, 
+          NodesScoresPath, 
+          NetworkLayersDir, 
+          Layers) {
      Measure <- EvolutionParameters$Measure 
      ThresholdDEG <- EvolutionParameters$ThresholdDEG
      
@@ -160,7 +169,9 @@ mogamun.load.data <- function(EvolutionParameters, DifferentialExpressionPath, N
      
      LoadedData <- 
           c(EvolutionParameters, 
-          list(DE_results = DE_results,
+          list(NetworkLayersDir = NetworkLayersDir,
+               Layers = Layers,
+               DE_results = DE_results,
                DEG = DEG,
                GenesWithNodesScores = GenesWithNodesScores,
                Multiplex = Multiplex,
@@ -185,15 +196,15 @@ mogamun.load.data <- function(EvolutionParameters, DifferentialExpressionPath, N
 #'
 #' @examples
 #' 
-#' DEGPath <- system.file("ExampleFiles/DE/Banerji2017.csv", package = "MOGAMUN")
-#' NodesScoresPath <- system.file("ExampleFiles/DE/Banerji2017_NodesScore.csv", package = "MOGAMUN")
+#' DEGPath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
+#' NodesScoresPath <- system.file("ExampleFiles/DE/Sample_DE_NodesScore.csv", package = "MOGAMUN")
 #' LayersPath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
-#' EvolutionParameters <- mogamun.init(Generations = 1)
+#' EvolutionParameters <- mogamun.init(Generations = 1, PopSize = 10)
 #' LoadedData <- mogamun.load.data(EvolutionParameters = EvolutionParameters,
 #'                   DifferentialExpressionPath = DEGPath,
 #'                   NodesScoresPath = NodesScoresPath,
 #'                   NetworkLayersDir = LayersPath,
-#'                   Layers = "123")
+#'                   Layers = "23")
 #' mogamun.run(LoadedData = LoadedData,
 #'                   Cores = 1,
 #'                   NumberOfRunsToExecute = 1,
@@ -216,7 +227,7 @@ mogamun.run <- function(LoadedData,
           Multiplex <- LoadedData$Multiplex
           
           # create result folder for new experiment
-          ResultsPath <- paste0(ResultsDir, "Experiment_", Sys.Date(), "/")
+          ResultsPath <- paste0(ResultsDir, "/Experiment_", Sys.Date(), "/")
           dir.create(ResultsPath, recursive=T)
           
           # defines the path and filename to store the results
@@ -415,3 +426,54 @@ mogamun.run <- function(LoadedData,
      }
 }
 
+
+
+
+#' @title mogamun.postprocess
+#'
+#' @description Postprocess the results: 
+#' i) calculates the accumulated Pareto front, i.e. the individuals on the first Pareto front after re-ranking the results from multiple runs
+#' (NOTE. If there is a single run, the result is the set of individuals in the first Pareto front),
+#' ii) filters the networks to leave only the interactions between the genes that are included in the results, 
+#' iii) generates some plots of interest, such as scatter plots and boxplots, and
+#' iv) (optional) creates a Cytoscape file to visualize the results, merging the subnetworks with a Jaccard similarity coefficient superior to JaccardSimilarityThreshold 
+#' (NOTE. Make sure to open Cytoscape if VisualizeInCytoscape is TRUE)
+#'
+#' @param ExperimentDir folder containing the results to be processed. It is the same folder specified as ResultsDir in mogamun.run
+#' @param LoadedData list returned by mogamun.load.data()
+#' @param JaccardSimilarityThreshold subnetworks over this Jaccard similarity threshold are merged in a single subnetwork
+#' @param VisualizeInCytoscape TRUE if you wish to visualize the accumulated Pareto front in Cytoscape, FALSE otherwise
+#'
+#' @return None
+#'
+#' @examples
+#' 
+#' DEGPath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
+#' NodesScoresPath <- system.file("ExampleFiles/DE/Sample_DE_NodesScore.csv", package = "MOGAMUN")
+#' LayersPath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
+#' EvolutionParameters <- mogamun.init(Generations = 1, PopSize = 10)
+#' LoadedData <- mogamun.load.data(EvolutionParameters = EvolutionParameters,
+#'                   DifferentialExpressionPath = DEGPath,
+#'                   NodesScoresPath = NodesScoresPath,
+#'                   NetworkLayersDir = LayersPath,
+#'                   Layers = "23")
+#' mogamun.run(LoadedData = LoadedData,
+#'                   Cores = 1,
+#'                   NumberOfRunsToExecute = 1,
+#'                   ResultsDir = '.')
+#' mogamun.postprocess(ExperimentDir = '.',
+#'                   LoadedData = LoadedData,
+#'                   JaccardSimilarityThreshold = 70,
+#'                   VisualizeInCytoscape = TRUE) 
+#'
+#' @export
+mogamun.postprocess <- function(ExperimentDir = '.',
+                                LoadedData = LoadedData,
+                                JaccardSimilarityThreshold = 70,
+                                VisualizeInCytoscape = TRUE) {
+
+     PostprocessResults(ExperimentDir = ExperimentDir, 
+                        LoadedData = LoadedData, 
+                        JaccardSimilarityThreshold = JaccardSimilarityThreshold, 
+                        VisualizeInCytoscape = VisualizeInCytoscape)
+}

@@ -464,7 +464,7 @@ mogamun.run <- function(LoadedData,
 #' mogamun.postprocess(ExperimentDir = '.',
 #'                   LoadedData = LoadedData,
 #'                   JaccardSimilarityThreshold = 70,
-#'                   VisualizeInCytoscape = TRUE) 
+#'                   VisualizeInCytoscape = FALSE) 
 #'
 #' @export
 mogamun.postprocess <- function(ExperimentDir = '.',

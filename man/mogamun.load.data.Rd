@@ -30,14 +30,14 @@ List with the data to process
 Load the data to process
 }
 \examples{
-EvolutionParameters <- mogamun.init()
-DEGPath <- system.file("ExampleFiles/DE/Banerji2017.csv", package = "MOGAMUN")
-NodesScoresPath <- system.file("ExampleFiles/DE/Banerji2017_NodesScore.csv", package = "MOGAMUN")
+EvolutionParameters <- mogamun.init(Generations = 1, PopSize = 10)
+DEGPath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
+NodesScoresPath <- system.file("ExampleFiles/DE/Sample_DE_NodesScore.csv", package = "MOGAMUN")
 LayersPath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
 LoadedData <- mogamun.load.data(EvolutionParameters = EvolutionParameters,
                   DifferentialExpressionPath = DEGPath,
                   NodesScoresPath = NodesScoresPath,
                   NetworkLayersDir = LayersPath,
-                  Layers = "123")
+                  Layers = "23")
 
 }

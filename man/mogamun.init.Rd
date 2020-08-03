@@ -13,10 +13,9 @@ mogamun.init(
   MutationRate = 0.1,
   JaccardSimilarityThreshold = 30,
   TournamentSize = 2,
-  ObjectiveNames = c("AverageNodesScore", "Density"),
+  Measure = "FDR",
   ThresholdDEG = 0.05,
-  MaxNumberOfAttempts = 3,
-  Measure = "FDR"
+  MaxNumberOfAttempts = 3
 )
 }
 \arguments{
@@ -36,13 +35,11 @@ mogamun.init(
 
 \item{TournamentSize}{size of the tournament (default = 2)}
 
-\item{ObjectiveNames}{list containing the names of the objectives (default =  c("AverageNodesScore", "Density"))}
+\item{Measure}{measure to calculate the nodes scores and to determine which genes are differentially expressed (possible values PValue and FDR, default = FDR)}
 
 \item{ThresholdDEG}{threshold to consider a gene as significantly differerentially expressed. Note: if there is a logFC available, it is also considered |logFC|>1  (default = 0.05)}
 
 \item{MaxNumberOfAttempts}{maximum number of attempts to find compatible parents (default = 3)}
-
-\item{Measure}{measure to calculate the nodes scores and to determine which genes are differentially expressed (possible values PValue and FDR, default = FDR)}
 }
 \value{
 EvolutionParameters
@@ -51,17 +48,16 @@ EvolutionParameters
 initialize evolution parameters
 }
 \examples{
-EvolutionParameters <- mogamun.init(Generations = 5,
-               PopSize = 100,
+EvolutionParameters <- mogamun.init(Generations = 1,
+               PopSize = 10,
                MinNumberOfNodesPerIndividual = 15,
                MaxNumberOfNodesPerIndividual = 50,
                CrossoverRate = 0.8,
                MutationRate = 0.1,
                JaccardSimilarityThreshold = 30,
                TournamentSize = 2,
-               ObjectiveNames = c("AverageNodesScore", "Density"),
+               Measure = "FDR",
                ThresholdDEG = 0.05,
-               MaxNumberOfAttempts = 3,
-               Measure = "FDR")
+               MaxNumberOfAttempts = 3)
 
 }

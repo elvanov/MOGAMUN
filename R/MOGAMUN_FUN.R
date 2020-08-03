@@ -1590,7 +1590,7 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
                network = d
           )
           
-          numberOfLayers <- length(loadedData$DensityPerLayerMultiplex)
+          numberOfLayers <- length(LoadedData$DensityPerLayerMultiplex)
           
           # define edges color 
           setEdgeColorMapping(
@@ -1601,7 +1601,7 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
                     ifelse( # adapt to any number of layers
                          numberOfLayers == 3, 
                          c("#0033FF", "#FF6600", "#FFFF00"), # use the same three colors from the paper
-                         rainbow(length(loadedData$DensityPerLayerMultiplex)) # create a color pallete wit enough colors
+                         rainbow(length(LoadedData$DensityPerLayerMultiplex)) # create a color pallete wit enough colors
                     )
           )
           

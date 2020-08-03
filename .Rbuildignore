@@ -1,2 +1,5 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^.github/workflows/main.yml$
+^PreprintFiles.zip$
+

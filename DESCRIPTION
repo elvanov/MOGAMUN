@@ -9,7 +9,9 @@ Description: A Multi-Objective Genetic Algorithm to Find Active Modules from Mul
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
+biocViews:
 Depends: doParallel (>= 1.0.0), igraph (>= 1.2.0.0)
 Imports: stats, utils, foreach, RCy3, stringr, graphics, grDevices, xfun
 Suggests: BiocStyle, knitr, rmarkdown
 RoxygenNote: 7.1.1
+

@@ -5,51 +5,79 @@
 \title{mogamun.postprocess}
 \usage{
 mogamun.postprocess(
-  ExperimentDir = ".",
-  LoadedData = LoadedData,
-  JaccardSimilarityThreshold = 70,
-  VisualizeInCytoscape = TRUE
+    ExperimentDir = ".",
+    LoadedData = LoadedData,
+    JaccardSimilarityThreshold = 70,
+    VisualizeInCytoscape = TRUE
 )
 }
 \arguments{
-\item{ExperimentDir}{folder containing the results to be processed. It is the same folder specified as ResultsDir in mogamun.run}
+\item{ExperimentDir}{folder containing the results to be processed. It is 
+the same folder specified as ResultsDir in mogamun.run}
 
 \item{LoadedData}{list returned by mogamun.load.data()}
 
-\item{JaccardSimilarityThreshold}{subnetworks over this Jaccard similarity threshold are merged in a single subnetwork}
+\item{JaccardSimilarityThreshold}{subnetworks over this Jaccard similarity 
+threshold are merged in a single subnetwork}
 
-\item{VisualizeInCytoscape}{TRUE if you wish to visualize the accumulated Pareto front in Cytoscape, FALSE otherwise}
+\item{VisualizeInCytoscape}{TRUE if you wish to visualize the accumulated 
+Pareto front in Cytoscape, FALSE otherwise}
 }
 \value{
 None
 }
 \description{
 Postprocess the results: 
-i) calculates the accumulated Pareto front, i.e. the individuals on the first Pareto front after re-ranking the results from multiple runs
-(NOTE. If there is a single run, the result is the set of individuals in the first Pareto front),
-ii) filters the networks to leave only the interactions between the genes that are included in the results, 
-iii) generates some plots of interest, such as scatter plots and boxplots, and
-iv) (optional) creates a Cytoscape file to visualize the results, merging the subnetworks with a Jaccard similarity coefficient superior to JaccardSimilarityThreshold 
+i) calculates the accumulated Pareto front, i.e. the individuals on the 
+first Pareto front after re-ranking the results from multiple runs
+(NOTE. If there is a single run, the result is the set of individuals in 
+the first Pareto front),
+ii) filters the networks to leave only the interactions between the genes 
+that are included in the results, 
+iii) generates some plots of interest, such as scatter plots and boxplots, 
+and
+iv) (optional) creates a Cytoscape file to visualize the results, merging 
+the subnetworks with a Jaccard similarity coefficient superior to 
+JaccardSimilarityThreshold 
 (NOTE. Make sure to open Cytoscape if VisualizeInCytoscape is TRUE)
 }
 \examples{
 
-DEGPath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
-NodesScoresPath <- system.file("ExampleFiles/DE/Sample_DE_NodesScore.csv", package = "MOGAMUN")
-LayersPath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
+DEGPath <- 
+    system.file(
+        "ExampleFiles/DE/Sample_DE.csv", 
+        package = "MOGAMUN"
+    )
+NodesScoresPath <- 
+    system.file(
+        "ExampleFiles/DE/Sample_NodesScore.csv", 
+        package = "MOGAMUN"
+    )
+LayersPath <- 
+    system.file(
+        "ExampleFiles/LayersMultiplex/", 
+        package = "MOGAMUN"
+    )
 EvolutionParameters <- mogamun.init(Generations = 1, PopSize = 10)
-LoadedData <- mogamun.load.data(EvolutionParameters = EvolutionParameters,
-                  DifferentialExpressionPath = DEGPath,
-                  NodesScoresPath = NodesScoresPath,
-                  NetworkLayersDir = LayersPath,
-                  Layers = "23")
-mogamun.run(LoadedData = LoadedData,
-                  Cores = 1,
-                  NumberOfRunsToExecute = 1,
-                  ResultsDir = '.')
-mogamun.postprocess(ExperimentDir = '.',
-                  LoadedData = LoadedData,
-                  JaccardSimilarityThreshold = 70,
-                  VisualizeInCytoscape = FALSE) 
+LoadedData <- 
+    mogamun.load.data(
+        EvolutionParameters = EvolutionParameters,
+        DifferentialExpressionPath = DEGPath,
+        NodesScoresPath = NodesScoresPath,
+        NetworkLayersDir = LayersPath,
+        Layers = "23"
+    )
+mogamun.run(
+    LoadedData = LoadedData,
+    Cores = 1,
+    NumberOfRunsToExecute = 1,
+    ResultsDir = '.'
+)
+mogamun.postprocess(
+    ExperimentDir = '.',
+    LoadedData = LoadedData,
+    JaccardSimilarityThreshold = 70,
+    VisualizeInCytoscape = FALSE
+) 
 
 }

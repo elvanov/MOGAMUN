@@ -9,7 +9,8 @@ mogamun.run(LoadedData, Cores = 1, NumberOfRunsToExecute = 1, ResultsDir = ".")
 \arguments{
 \item{LoadedData}{list returned by mogamun.load.data()}
 
-\item{Cores}{to run MOGAMUN in parallel on the given number of cores (in line with the number of physical processor cores)}
+\item{Cores}{to run MOGAMUN in parallel on the given number of cores (in 
+line with the number of physical processor cores)}
 
 \item{NumberOfRunsToExecute}{number of runs (default = 1)}
 
@@ -19,22 +20,39 @@ mogamun.run(LoadedData, Cores = 1, NumberOfRunsToExecute = 1, ResultsDir = ".")
 None
 }
 \description{
-Run the algorithm with the specified values for the evolution parameters
+Run the algorithm with the specified values for the evolution 
+parameters
 }
 \examples{
 
-DEGPath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
-NodesScoresPath <- system.file("ExampleFiles/DE/Sample_DE_NodesScore.csv", package = "MOGAMUN")
-LayersPath <- system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
+DEGPath <- 
+    system.file(
+        "ExampleFiles/DE/Sample_DE.csv", 
+        package = "MOGAMUN"
+    )
+NodesScoresPath <- 
+    system.file(
+        "ExampleFiles/DE/Sample_NodesScore.csv", 
+        package = "MOGAMUN"
+    )
+LayersPath <- 
+    system.file(
+        "ExampleFiles/LayersMultiplex/", 
+        package = "MOGAMUN"
+    )
 EvolutionParameters <- mogamun.init(Generations = 1, PopSize = 10)
-LoadedData <- mogamun.load.data(EvolutionParameters = EvolutionParameters,
-                  DifferentialExpressionPath = DEGPath,
-                  NodesScoresPath = NodesScoresPath,
-                  NetworkLayersDir = LayersPath,
-                  Layers = "23")
-mogamun.run(LoadedData = LoadedData,
-                  Cores = 1,
-                  NumberOfRunsToExecute = 1,
-                  ResultsDir = tempdir()) 
-
+LoadedData <- 
+    mogamun.load.data(
+        EvolutionParameters = EvolutionParameters,
+        DifferentialExpressionPath = DEGPath,
+        NodesScoresPath = NodesScoresPath,
+        NetworkLayersDir = LayersPath,
+        Layers = "23"
+    )
+mogamun.run(
+    LoadedData = LoadedData,
+    Cores = 1,
+    NumberOfRunsToExecute = 1,
+    ResultsDir = '.'
+)
 }

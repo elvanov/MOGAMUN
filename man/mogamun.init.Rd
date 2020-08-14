@@ -5,17 +5,17 @@
 \title{mogamun.init}
 \usage{
 mogamun.init(
-  Generations = 500,
-  PopSize = 100,
-  MinNumberOfNodesPerIndividual = 15,
-  MaxNumberOfNodesPerIndividual = 50,
-  CrossoverRate = 0.8,
-  MutationRate = 0.1,
-  JaccardSimilarityThreshold = 30,
-  TournamentSize = 2,
-  Measure = "FDR",
-  ThresholdDEG = 0.05,
-  MaxNumberOfAttempts = 3
+    Generations = 500,
+    PopSize = 100,
+    MinNumberOfNodesPerIndividual = 15,
+    MaxNumberOfNodesPerIndividual = 50,
+    CrossoverRate = 0.8,
+    MutationRate = 0.1,
+    JaccardSimilarityThreshold = 30,
+    TournamentSize = 2,
+    Measure = "FDR",
+    ThresholdDEG = 0.05,
+    MaxNumberOfAttempts = 3
 )
 }
 \arguments{
@@ -23,23 +23,31 @@ mogamun.init(
 
 \item{PopSize}{number of subnetworks in the population (default = 100)}
 
-\item{MinNumberOfNodesPerIndividual}{minimum size of the subnetworks (default = 15)}
+\item{MinNumberOfNodesPerIndividual}{minimum size of the subnetworks 
+(default = 15)}
 
-\item{MaxNumberOfNodesPerIndividual}{maximum size of the subnetworks (default = 50)}
+\item{MaxNumberOfNodesPerIndividual}{maximum size of the subnetworks 
+(default = 50)}
 
 \item{CrossoverRate}{rate for the crossover (default = 0.8)}
 
 \item{MutationRate}{rate for the mutation (default = 0.1)}
 
-\item{JaccardSimilarityThreshold}{subnetworks over this Jaccard similarity threshold are considered as duplicated (default = 30)}
+\item{JaccardSimilarityThreshold}{subnetworks over this Jaccard similarity 
+threshold are considered as duplicated (default = 30)}
 
 \item{TournamentSize}{size of the tournament (default = 2)}
 
-\item{Measure}{measure to calculate the nodes scores and to determine which genes are differentially expressed (possible values PValue and FDR, default = FDR)}
+\item{Measure}{measure to calculate the nodes scores and to determine which 
+genes are differentially expressed 
+(possible values PValue and FDR, default = FDR)}
 
-\item{ThresholdDEG}{threshold to consider a gene as significantly differerentially expressed. Note: if there is a logFC available, it is also considered |logFC|>1  (default = 0.05)}
+\item{ThresholdDEG}{threshold to consider a gene as significantly 
+differerentially expressed. Note: if there is a logFC available, it is also 
+considered |logFC|>1  (default = 0.05)}
 
-\item{MaxNumberOfAttempts}{maximum number of attempts to find compatible parents (default = 3)}
+\item{MaxNumberOfAttempts}{maximum number of attempts to find compatible 
+parents (default = 3)}
 }
 \value{
 EvolutionParameters
@@ -48,16 +56,19 @@ EvolutionParameters
 initialize evolution parameters
 }
 \examples{
-EvolutionParameters <- mogamun.init(Generations = 1,
-               PopSize = 10,
-               MinNumberOfNodesPerIndividual = 15,
-               MaxNumberOfNodesPerIndividual = 50,
-               CrossoverRate = 0.8,
-               MutationRate = 0.1,
-               JaccardSimilarityThreshold = 30,
-               TournamentSize = 2,
-               Measure = "FDR",
-               ThresholdDEG = 0.05,
-               MaxNumberOfAttempts = 3)
+EvolutionParameters <- 
+    mogamun.init(
+        Generations = 1,
+        PopSize = 10,
+        MinNumberOfNodesPerIndividual = 15,
+        MaxNumberOfNodesPerIndividual = 50,
+        CrossoverRate = 0.8,
+        MutationRate = 0.1,
+        JaccardSimilarityThreshold = 30,
+        TournamentSize = 2,
+        Measure = "FDR",
+        ThresholdDEG = 0.05,
+        MaxNumberOfAttempts = 3
+    )
 
 }

@@ -2,11 +2,8 @@
 title: "MOGAMUN - A Multi-Objective Genetic Algorithm to Find Active Modules in 
 Multiplex Biological Networks"
 author: 
-    -   name: "Elva María Novoa del Toro"
-        affilitation: Aix Marseille Univ, INSERM, Marseille Medical Genetics 
-        (MMG), Marseille, France
-        email: elva.novoa@inserm.fr
-        package: MOGAMUN
+- name: Elva María Novoa del Toro
+package: MOGAMUN
 output: BiocStyle::html_document
 vignette: >
     %\VignetteIndexEntry{MOGAMUN - A Multi-Objective Genetic Algorithm to Find 
@@ -122,10 +119,11 @@ files from the `NetworkLayersDir` are to be used to build the multiplex network
 
 ```{r load, echo = TRUE}
 dePath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
-scoresPath <- 
+scoresPath <-
     system.file("ExampleFiles/DE/Sample_NodesScore.csv", package = "MOGAMUN")
-layersPath <- 
+layersPath <-
     system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
+
 loadedData <- 
     mogamun.load.data(
         EvolutionParameters = parameters, 

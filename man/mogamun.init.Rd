@@ -7,8 +7,8 @@
 mogamun.init(
     Generations = 500,
     PopSize = 100,
-    MinNumberOfNodesPerIndividual = 15,
-    MaxNumberOfNodesPerIndividual = 50,
+    MinSize = 15,
+    MaxSize = 50,
     CrossoverRate = 0.8,
     MutationRate = 0.1,
     JaccardSimilarityThreshold = 30,
@@ -23,11 +23,9 @@ mogamun.init(
 
 \item{PopSize}{number of subnetworks in the population (default = 100)}
 
-\item{MinNumberOfNodesPerIndividual}{minimum size of the subnetworks 
-(default = 15)}
+\item{MinSize}{minimum size (no. of nodes) of the subnetworks (default = 15)}
 
-\item{MaxNumberOfNodesPerIndividual}{maximum size of the subnetworks 
-(default = 50)}
+\item{MaxSize}{maximum size (no. of nodes) of the subnetworks (default = 50)}
 
 \item{CrossoverRate}{rate for the crossover (default = 0.8)}
 
@@ -60,8 +58,8 @@ EvolutionParameters <-
     mogamun.init(
         Generations = 1,
         PopSize = 10,
-        MinNumberOfNodesPerIndividual = 15,
-        MaxNumberOfNodesPerIndividual = 50,
+        MinSize = 15,
+        MaxSize = 50,
         CrossoverRate = 0.8,
         MutationRate = 0.1,
         JaccardSimilarityThreshold = 30,

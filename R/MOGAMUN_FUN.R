@@ -156,8 +156,8 @@ GetNodesScoresOfListOfGenes <- function(DE_results, ListOfGenes, Measure) {
 #         LoadedData - general data 
 # OUTPUT: Population of size PopSize with integer codification
 GenerateInitialPop <- function (PopSize, Multiplex, LoadedData) {
-    MinSize <- LoadedData$MinNumberOfNodesPerIndividual
-    MaxSize <- LoadedData$MaxNumberOfNodesPerIndividual
+    MinSize <- LoadedData$MinSize
+    MaxSize <- LoadedData$MaxSize
     
     MyPopulation <- vector("list", PopSize) # initialize an empty vector 
     for (i in seq_len(PopSize)) { # loop from 1 to the total population size
@@ -617,8 +617,8 @@ GetNeighbors <- function(NodeList, Multiplex) {
 # OUTPUT: Two children (a single connected component per child)
 Crossover <- function (Parent1, Parent2, LoadedData) {
     MaxNumberOfAttempts <- LoadedData$MaxNumberOfAttempts
-    MinSize <- LoadedData$MinNumberOfNodesPerIndividual
-    MaxSize <- LoadedData$MaxNumberOfNodesPerIndividual
+    MinSize <- LoadedData$MinSize
+    MaxSize <- LoadedData$MaxSize
     CrossoverRate <- LoadedData$CrossoverRate
     Multiplex <- LoadedData$Multiplex
     Children <- NULL # intialize empty list
@@ -1544,7 +1544,7 @@ GetSimilarInds <- function(DiversePop, Threshold) {
 #         Threshold - subnetworks over this Jaccard similarity are merged 
 # OUTPUT: None
 JoinSimilarInds <- function(AccPF, LoadedData, Threshold) {
-    MaxSize <- LoadedData$MaxNumberOfNodesPerIndividual
+    MaxSize <- LoadedData$MaxSize
     DiversePop <- AccPF # save a copy of the accumulated Pareto front
     
     # flag to deactivate when no individuals-pair fulfill the threshold

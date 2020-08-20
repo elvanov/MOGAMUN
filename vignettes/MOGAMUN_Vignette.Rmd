@@ -149,7 +149,7 @@ sequentially.
 results must be stored (*default = '.'*, i.e. current working directory).
 
 ```{r run, echo = TRUE}
-mogamun.run(LoadedData = loadedData, ResultsDir = '.') 
+# mogamun.run(LoadedData = loadedData, ResultsDir = '.') 
 ```
 
 In the results directory (`ResultsDir`) you will find a subfolder which name 

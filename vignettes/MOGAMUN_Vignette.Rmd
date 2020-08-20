@@ -6,8 +6,7 @@ author:
 package: MOGAMUN
 output: BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{MOGAMUN - A Multi-Objective Genetic Algorithm to Find 
-  Active Modules in Multiplex Biological Networks}
+  %\VignetteIndexEntry{Finding active modules with MOGAMUN}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}  
 ---

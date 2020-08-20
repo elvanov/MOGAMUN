@@ -12,8 +12,8 @@ vignette: >
 ---
 
 ```{r setup, echo = FALSE, include=FALSE}
-library(xfun)
-library(MOGAMUN)
+#library(xfun)
+#library(MOGAMUN)
 ```
 
 
@@ -80,7 +80,7 @@ i7 at 3.60GHz and 32GB of RAM.
 
 
 ```{r init, echo = TRUE}
-parameters <- mogamun.init(Generations = 1, PopSize = 10)
+#parameters <- mogamun.init(Generations = 1, PopSize = 10)
 ```
 
 
@@ -116,20 +116,20 @@ files from the `NetworkLayersDir` are to be used to build the multiplex network
 (e.g. "123" to use the networks which names start with "1", "2", and "3").
 
 ```{r load, echo = TRUE}
-dePath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
-scoresPath <-
-    system.file("ExampleFiles/DE/Sample_NodesScore.csv", package = "MOGAMUN")
-layersPath <-
-    system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
-
-loadedData <- 
-    mogamun.load.data(
-        EvolutionParameters = parameters, 
-        DifferentialExpressionPath = dePath,
-        NodesScoresPath = scoresPath,
-        NetworkLayersDir = layersPath,
-        Layers = "23"
-    )
+# dePath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
+# scoresPath <-
+#     system.file("ExampleFiles/DE/Sample_NodesScore.csv", package = "MOGAMUN")
+# layersPath <-
+#     system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
+# 
+# loadedData <- 
+#     mogamun.load.data(
+#         EvolutionParameters = parameters, 
+#         DifferentialExpressionPath = dePath,
+#         NodesScoresPath = scoresPath,
+#         NetworkLayersDir = layersPath,
+#         Layers = "23"
+#     )
 ```
 
 ## Running the algorithm
@@ -218,7 +218,7 @@ will be the set of subnetworks in the first Pareto front. Otherwise, the result
 will be the accumulated Pareto front, as we already explained. 
 
 ```{r postp, echo = TRUE}
-mogamun.postprocess(
-    ExperimentDir = '.', LoadedData = loadedData, VisualizeInCytoscape = FALSE) 
+# mogamun.postprocess(
+#     ExperimentDir = '.', LoadedData = loadedData, VisualizeInCytoscape = FALSE) 
 ```
 

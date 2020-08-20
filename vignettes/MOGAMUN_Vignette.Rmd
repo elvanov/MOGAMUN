@@ -2,11 +2,8 @@
 title: "MOGAMUN - A Multi-Objective Genetic Algorithm to Find Active Modules in 
 Multiplex Biological Networks"
 author: 
-    -   name: "Elva María Novoa del Toro"
-        affilitation: Aix Marseille Univ, INSERM, Marseille Medical Genetics 
-        (MMG), Marseille, France
-        email: elva.novoa@inserm.fr
-        package: MOGAMUN
+- name: Elva María Novoa del Toro
+package: MOGAMUN
 output: BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{MOGAMUN - A Multi-Objective Genetic Algorithm to Find 
@@ -114,21 +111,19 @@ that if this file does not exist, MOGAMUN will create it.
 that contains the networks that will compose the multiplex network. Please note 
 that each biological network must be in a separate file with 2-column 
 **tab separated** format. The name of each file must start with a different 
-number, which will be used in the `Layers` parameter. There are two example 
+character, which will be used in the `Layers` parameter. There are two example 
 files in *MOGAMUN/ExampleFiles/LayersMultiplex*.
-* `Layers` is a string composed of a chain of numbers that determine which 
+* `Layers` is a string composed of a chain of characters that determine which 
 files from the `NetworkLayersDir` are to be used to build the multiplex network 
 (e.g. "123" to use the networks which names start with "1", "2", and "3").
 
 ```{r load, echo = TRUE}
-# dePath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
-# scoresPath <- 
-#     system.file("ExampleFiles/DE/Sample_NodesScore.csv", package = "MOGAMUN")
-# layersPath <- 
-#     system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
-dePath <- "/home/elva/MOGAMUN/inst/ExampleFiles/DE/Sample_DE.csv"
-scoresPath <- "/home/elva/MOGAMUN/inst/ExampleFiles/DE/Sample_NodesScore.csv"
-layersPath <- "/home/elva/MOGAMUN/inst/ExampleFiles/LayersMultiplex/"
+dePath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
+scoresPath <-
+    system.file("ExampleFiles/DE/Sample_NodesScore.csv", package = "MOGAMUN")
+layersPath <-
+    system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
+
 loadedData <- 
     mogamun.load.data(
         EvolutionParameters = parameters, 
@@ -186,30 +181,23 @@ union of the results of all the individual runs. But considering that in such
 set there might be subnetworks that are better than others (according to the 
 Pareto dominance), to obtain the final result we calculate the accumulated 
 Pareto front. To this goal, we re-rank the set composed by the union of all the 
-results, and leave only those subnetworks with rank = 1. For example, in 
-Figure 1 we show the results of an experiment of 30 runs with the 
-Banerji et al. 2017 dataset that we analyzed in our preprint. In **Figure 1a** 
-we show the union of the results of the 30 runs (only those subnetworks with 
-rank = 1 in each individual run), re-ranked, and in **Figure 1b** we show the 
-resulting accumulated Pareto front. 
+results, and leave only those subnetworks with rank = 1. In addition, we
+propose to merge the subnetworks that are very similar, in order to avoid 
+having two different networks if they only differ for one node, for instance 
+(see `JaccardSimilarityThreshold`).
 
-![Figure 1. Accumulated Pareto front from 30 runs](/home/elva/MOGAMUN/vignettes/ScatterPlot_AccPF.png)
+Depending on the number of runs you execute, there are other plots that might 
+be generated during the postprocessing, such as scatter plots (always) and 
+boxplots (only if `NumberOfRunsToExecute` in `mogamun.run` > 1).
 
-Depending on the number of runs you execute, we also generate some plots of 
-interest, such as scatter plots (always) and boxplots (only if 
-`NumberOfRunsToExecute` in `mogamun.run` > 1).
-
-
-
-Finally, we visualize the subnetworks in the accumulated Pareto front in 
-Cytoscape. To do so, we first filter the networks that were used to build the 
-multiplex, to leave only those interactions among the genes that are included 
-in the result (i.e. the accumulated Pareto front). Once in Cytoscape, the nodes 
-will be colored according to their *logFC* value, where green stands for 
-downregulated, red means upregulated, and white means no deregulation. Nodes 
-corresponding to significantly differentially expressed genes will have black 
-border, and the color of the edges will be different for each layer of the 
-multiplex network. 
+Finally, it is possible to visualize the subnetworks from the accumulated 
+Pareto front in Cytoscape. Please note that the network you used to build the 
+multiplex will be filtered to leave only those interactions among the genes 
+that are included in the result. The nodes will be colored according to their 
+*logFC* value, where green stands for downregulated, red means upregulated, and 
+white means no deregulation. Nodes corresponding to significantly 
+differentially expressed genes will have black border, and the color of the 
+edges will be different for each layer of the multiplex network. 
 
 The postprocessing is done with the function `mogamun.postprocess`, which has 
 4 parameters:  
@@ -220,18 +208,19 @@ results are stored. It must coincide with the `ResultsDir` folder from
 * `LoadedData` is the list returned by `mogamun.load.data`.
 * `JaccardSimilarityThreshold` is an integer that determines the minimum 
 Jaccard similarity coefficient that a pair of subnetworks must have to be 
-merged in a single subnetwork.
+merged in a single subnetwork (default = 70).
 * `VisualizeInCytoscape` is a boolean value (TRUE/FALSE) that determines 
 whether the accumulated Pareto front is to be displayed in Cytoscape or not. 
 NOTE. When `VisualizeInCytoscape` is TRUE, Cytoscape needs to be up and running 
-in the computer. 
+in the computer (default = TRUE). 
 
 Please note that you can make use of `mogamun.postprocess` with any number of 
 runs. If the experiment to be postprocessed contains a single run, the result 
 will be the set of subnetworks in the first Pareto front. Otherwise, the result 
 will be the accumulated Pareto front, as we already explained. 
 
-
-
-
+```{r postp, echo = TRUE}
+mogamun.postprocess(
+    ExperimentDir = '.', LoadedData = loadedData, VisualizeInCytoscape = FALSE) 
+```
 

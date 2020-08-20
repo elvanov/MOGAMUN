@@ -9,10 +9,10 @@ author:
         package: MOGAMUN
 output: BiocStyle::html_document
 vignette: >
-    %\VignetteIndexEntry{MOGAMUN - A Multi-Objective Genetic Algorithm to Find 
-    Active Modules in Multiplex Biological Networks}
-    %\VignetteEngine{knitr::rmarkdown}
-    %\VignetteEncoding{UTF-8}  
+  %\VignetteIndexEntry{MOGAMUN - A Multi-Objective Genetic Algorithm to Find 
+  Active Modules in Multiplex Biological Networks}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}  
 ---
 
 ```{r setup, echo = FALSE, include=FALSE}
@@ -26,7 +26,7 @@ library(MOGAMUN)
 This document describes the use of MOGAMUN, the type and format of the input 
 data, and the post-processing and visualization of the output data. MOGAMUN is 
 a package to find active modules (i.e., highly connected subnetworks with an 
-overall deregulation) in multiplex biological networks. For a detailed detailed 
+overall deregulation) in multiplex biological networks. For a detailed  
 description of MOGAMUN check out the preprint 
 https://www.biorxiv.org/content/10.1101/2020.05.25.114215v1. All the expression 
 datasets and networks that we used to obtain the results reported in our 
@@ -44,19 +44,18 @@ parameters, such as the minimum and maximun sizes of the subnetworks, via
 
 * `PopSize` is an integer that determines the size of the population 
 (*default = 100*).
-* `MinNumberOfNodesPerIndividual` and `MaxNumberOfNodesPerIndividual` are 
-integers that determine the minimun and maximum number of nodes that are 
-allowed in each subnetwork AKA individual, respectively 
-(*default min. = 15, max. = 50*).
+* `MinSize` and `MaxSize` are integers that determine the minimun and maximum 
+number of nodes that are allowed in each subnetwork (i.e. individual), 
+respectively (*default min. = 15, max. = 50*).
 * `Generations` is an integer that determines the total number of generations 
 of the evolution process (*default = 500*).
 * `TournamentSize` is an integer that determines the size of the tournament, 
 i.e. the number of individuals that will participate in the tournament for the 
 selection of parents (*default = 2*).
-* `CrossoverRate` is a real value in the range of [0-1] that determines the 
+* `CrossoverRate` is a real value in the [0-1] range that determines the 
 crossover rate, where 0 means that crossover will never be performed and 1 
 means that crossover will always be performed (*default = 0.8*).
-* `MutationRate` is a real value in the range of [0-1] that determines the 
+* `MutationRate` is a real value in the [0-1] range that determines the 
 mutation rate, where 0 means that mutation will never be performed and 1 means 
 that mutation will always be performed (*default = 0.1*).
 * `JaccardSimilarityThreshold` is an integer that determines the maximum 
@@ -68,8 +67,8 @@ the rest will be replaced by random subnetworks.
 * `MaxNumberOfAttempts` is an integer that determines the maximum number of 
 attempts allowed to try to find compatible parents for the crossover 
 (*default = 3*).
-* `Measure` is a string that can take any of two values: **FDR** or **PValue**, 
-to determine which statistical value will be taken into account to obtain the 
+* `Measure` is a string that can take any of two values: **FDR** or **PValue**. 
+It determines which statistical value will be taken into account to obtain the 
 list of significantly differentially expressed genes (*default  = FDR*).
 * `ThresholdDEG` is a real value that determines the maximum value of the 
 `Measure` to consider a gene as significantly differentially expressed 
@@ -80,8 +79,9 @@ If MOGAMUN is to be run with the default values, execute
 change, separated by commas. Please be aware than although we recommend to let 
 the evolution run for 500 generations, this process can be long. For instance, 
 using a multiplex networks with the three layers that we provide in 
-*MOGAMUN/ExampleFiles.zip* and a desktop computer with Intel processor i7 at 
-3.60GHz and 32GB of RAM, the process took approximately 12 hours.
+*MOGAMUN/ExampleFiles.zip* and the default values for all the parameters, the 
+process took approximately 12 hours in a desktop computer with Intel processor 
+i7 at 3.60GHz and 32GB of RAM.
 
 
 ```{r init, echo = TRUE}
@@ -169,8 +169,8 @@ you can use to check the convergence, for instance. The file
 **MOGAMUN_Results__Run_N.txt** contains the complete final population of size 
 `PopSize` (i.e. all the subnetworks from the last generation), one per row. 
 The number of elements in every row is variable because the size of each 
-subnetwork can vary between `MinNumberOfNodesPerIndividual` and 
-`MaxNumberOfNodesPerIndividual`. If **X_n** is the number of elements in the 
+subnetwork can vary between `MinSize` and 
+`MaxSize`. If **X_n** is the number of elements in the 
 **n**-th row: the nodes of the subnetwork are the first **X_n**-4 elements. 
 The last four elements correspond to the average nodes score, density, rank, 
 and crowding distance, respectively. The best (non-dominated) subnetworks have 

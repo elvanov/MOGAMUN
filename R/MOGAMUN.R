@@ -12,10 +12,8 @@
 #'
 #' @param Generations number of generations to run (default = 500)
 #' @param PopSize number of subnetworks in the population (default = 100)
-#' @param MinNumberOfNodesPerIndividual minimum size of the subnetworks 
-#' (default = 15)
-#' @param MaxNumberOfNodesPerIndividual maximum size of the subnetworks 
-#' (default = 50)
+#' @param MinSize minimum size (no. of nodes) of the subnetworks (default = 15)
+#' @param MaxSize maximum size (no. of nodes) of the subnetworks (default = 50)
 #' @param CrossoverRate rate for the crossover (default = 0.8)
 #' @param MutationRate rate for the mutation (default = 0.1)
 #' @param JaccardSimilarityThreshold subnetworks over this Jaccard similarity 
@@ -37,8 +35,8 @@
 #'     mogamun.init(
 #'         Generations = 1,
 #'         PopSize = 10,
-#'         MinNumberOfNodesPerIndividual = 15,
-#'         MaxNumberOfNodesPerIndividual = 50,
+#'         MinSize = 15,
+#'         MaxSize = 50,
 #'         CrossoverRate = 0.8,
 #'         MutationRate = 0.1,
 #'         JaccardSimilarityThreshold = 30,
@@ -61,7 +59,7 @@
 #' @importFrom graphics boxplot plot legend
 #' @importFrom grDevices svg dev.off rainbow
 mogamun.init <- function(Generations = 500, PopSize = 100,
-    MinNumberOfNodesPerIndividual = 15, MaxNumberOfNodesPerIndividual = 50,
+    MinSize = 15, MaxSize = 50,
     CrossoverRate = 0.8, MutationRate = 0.1, JaccardSimilarityThreshold = 30,
     TournamentSize = 2, Measure = "FDR", ThresholdDEG = 0.05,
     MaxNumberOfAttempts = 3) {
@@ -70,8 +68,8 @@ mogamun.init <- function(Generations = 500, PopSize = 100,
     EvolutionParameters <- list(
         Generations = Generations, 
         PopSize = PopSize, 
-        MinNumberOfNodesPerIndividual = MinNumberOfNodesPerIndividual,
-        MaxNumberOfNodesPerIndividual = MaxNumberOfNodesPerIndividual,
+        MinSize = MinSize,
+        MaxSize = MaxSize,
         CrossoverRate = CrossoverRate,
         MutationRate = MutationRate, 
         JaccardSimilarityThreshold = JaccardSimilarityThreshold,

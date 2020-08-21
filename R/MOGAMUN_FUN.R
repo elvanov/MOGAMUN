@@ -460,7 +460,7 @@ MakeNewPopulation <- function(LoadedData, Population) {
         Attempts <- 0 # counter for max. attemps to find parents
         KeepLooking <- TRUE  # flag to keep looking for parents
         
-        while ( Attempts < MaxNumberOfAttempts & KeepLooking == TRUE ) {
+        while (Attempts < MaxNumberOfAttempts & KeepLooking == TRUE) {
             Parent1 <- TournamentSelection(TournSize, Population) # selection
             Parent2 <- GetParent2(Parent1, Population, LoadedData)
             
@@ -843,7 +843,7 @@ Mutation <- function (Individuals, Multiplex, LoadedData) {
             if (length(NodesToMutate) > 0) { 
                 Individuals[[i]] <- 
                     MutateNodes(Individuals[[i]], IndToMutNet,  NodesToMutate, 
-                                PotNodesToMutate, Merged) 
+                                PotNodesToMutate, LoadedData) 
             } else { # if no nodes were removed, add a new neighbor
                 Individuals[[i]] <- 
                     AddNode(Individuals[[i]], IndToMutNet, LoadedData) 

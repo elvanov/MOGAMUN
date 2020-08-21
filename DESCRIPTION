@@ -10,7 +10,7 @@ License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Depends: doParallel (>= 1.0.0), igraph (>= 1.2.0.0)
-Imports: stats, utils, foreach, RCy3, stringr, graphics, grDevices, xfun
+Imports: stats, utils, foreach, RCy3, stringr, graphics, grDevices, xfun, RUnit
 Suggests: BiocStyle, knitr, rmarkdown
 biocViews: SystemsBiology, GraphAndNetwork, DifferentialExpression, BiomedicalInformatics, Transcriptomics, Clustering
 RoxygenNote: 7.1.1

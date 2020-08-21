@@ -47,7 +47,8 @@
 #'     )
 #'
 #' @export
-#' @import doParallel igraph stringr xfun
+#' @import doParallel igraph stringr RUnit
+#' @importFrom xfun install_github
 #' @importFrom foreach `%dopar%` foreach
 #' @importFrom utils write.table read.table combn read.csv write.csv 
 #' @importFrom stats runif qnorm
@@ -63,6 +64,13 @@ mogamun.init <- function(Generations = 500, PopSize = 100,
     CrossoverRate = 0.8, MutationRate = 0.1, JaccardSimilarityThreshold = 30,
     TournamentSize = 2, Measure = "FDR", ThresholdDEG = 0.05,
     MaxNumberOfAttempts = 3) {
+
+    pkgname <- c("doParallel", "igraph", "stringr")
+    
+    for (p in pkgname) {
+        require(p, quietly = TRUE, character.only = TRUE) || 
+            stop("Package '", p, "' not found")
+    }
     
     # determines the parameters that will be used for the evolution
     EvolutionParameters <- list(
@@ -185,7 +193,7 @@ mogamun.load.data <- function(EvolutionParameters, DifferentialExpressionPath,
 #'
 #' @param LoadedData list returned by mogamun.load.data()
 #' @param Cores to run MOGAMUN in parallel on the given number of cores (in 
-#' line with the number of physical processor cores)
+#' line with the number of physical processor cores) (default = 1)
 #' @param NumberOfRunsToExecute number of runs (default = 1)
 #' @param ResultsDir outputs the results in the specified folder
 #'
@@ -279,7 +287,7 @@ mogamun.run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
 
 #' @title mogamun.postprocess
 #'
-#' @description Postprocess the results: 
+#' @description Postprocess the results. This function: 
 #' i) calculates the accumulated Pareto front, i.e. the individuals on the 
 #' first Pareto front after re-ranking the results from multiple runs
 #' (NOTE. If there is a single run, the result is the set of individuals in 

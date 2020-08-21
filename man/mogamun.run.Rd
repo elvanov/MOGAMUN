@@ -10,7 +10,7 @@ mogamun.run(LoadedData, Cores = 1, NumberOfRunsToExecute = 1, ResultsDir = ".")
 \item{LoadedData}{list returned by mogamun.load.data()}
 
 \item{Cores}{to run MOGAMUN in parallel on the given number of cores (in 
-line with the number of physical processor cores)}
+line with the number of physical processor cores) (default = 1)}
 
 \item{NumberOfRunsToExecute}{number of runs (default = 1)}
 

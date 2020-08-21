@@ -1,10 +1,8 @@
 ---
-title: "MOGAMUN - A Multi-Objective Genetic Algorithm to Find Active Modules in 
-Multiplex Biological Networks"
-author: 
-- name: Elva Ma. Novoa del Toro
+title: "MOGAMUN - A Multi-Objective Genetic Algorithm to Find Active Modules in Multiplex Biological Networks"
+author: Elva Ma. Novoa del Toro
 package: MOGAMUN
-output: BiocStyle::html_document
+output: BiocStyle::pdf_document
 vignette: >
   %\VignetteIndexEntry{Finding active modules with MOGAMUN}
   %\VignetteEngine{knitr::rmarkdown}
@@ -12,8 +10,7 @@ vignette: >
 ---
 
 ```{r setup, echo = FALSE, include=FALSE}
-#library(xfun)
-#library(MOGAMUN)
+library(MOGAMUN)
 ```
 
 
@@ -79,8 +76,8 @@ process took approximately 12 hours in a desktop computer with Intel processor
 i7 at 3.60GHz and 32GB of RAM.
 
 
-```{r init, echo = TRUE}
-#parameters <- mogamun.init(Generations = 1, PopSize = 10)
+```{r init, echo = TRUE, message = FALSE}
+parameters <- mogamun.init(Generations = 1, PopSize = 10)
 ```
 
 
@@ -116,20 +113,20 @@ files from the `NetworkLayersDir` are to be used to build the multiplex network
 (e.g. "123" to use the networks which names start with "1", "2", and "3").
 
 ```{r load, echo = TRUE}
-# dePath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
-# scoresPath <-
-#     system.file("ExampleFiles/DE/Sample_NodesScore.csv", package = "MOGAMUN")
-# layersPath <-
-#     system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
-# 
-# loadedData <- 
-#     mogamun.load.data(
-#         EvolutionParameters = parameters, 
-#         DifferentialExpressionPath = dePath,
-#         NodesScoresPath = scoresPath,
-#         NetworkLayersDir = layersPath,
-#         Layers = "23"
-#     )
+dePath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
+scoresPath <-
+    system.file("ExampleFiles/DE/Sample_NodesScore.csv", package = "MOGAMUN")
+layersPath <-
+    system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
+
+loadedData <-
+    mogamun.load.data(
+        EvolutionParameters = parameters,
+        DifferentialExpressionPath = dePath,
+        NodesScoresPath = scoresPath,
+        NetworkLayersDir = layersPath,
+        Layers = "23"
+    )
 ```
 
 ## Running the algorithm
@@ -149,7 +146,7 @@ sequentially.
 results must be stored (*default = '.'*, i.e. current working directory).
 
 ```{r run, echo = TRUE}
-# mogamun.run(LoadedData = loadedData, ResultsDir = '.') 
+mogamun.run(LoadedData = loadedData, ResultsDir = '.')
 ```
 
 In the results directory (`ResultsDir`) you will find a subfolder which name 
@@ -217,8 +214,7 @@ runs. If the experiment to be postprocessed contains a single run, the result
 will be the set of subnetworks in the first Pareto front. Otherwise, the result 
 will be the accumulated Pareto front, as we already explained. 
 
-```{r postp, echo = TRUE}
-# mogamun.postprocess(
-#     ExperimentDir = '.', LoadedData = loadedData, VisualizeInCytoscape = FALSE) 
+```{r end, echo = FALSE}
+# unlink(paste0("./Experiment_", Sys.Date()), recursive = TRUE)
 ```
 

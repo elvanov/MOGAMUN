@@ -48,7 +48,7 @@
 #'
 #' @export
 #' @import doParallel igraph stringr RUnit
-#' @importFrom xfun install_github
+#' @importFrom devtools install_github
 #' @importFrom foreach `%dopar%` foreach
 #' @importFrom utils write.table read.table combn read.csv write.csv 
 #' @importFrom stats runif qnorm

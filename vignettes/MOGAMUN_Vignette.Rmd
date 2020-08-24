@@ -2,7 +2,7 @@
 title: "MOGAMUN - A Multi-Objective Genetic Algorithm to Find Active Modules in Multiplex Biological Networks"
 author: Elva Ma. Novoa del Toro
 package: MOGAMUN
-output: BiocStyle::pdf_document
+output: BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{Finding active modules with MOGAMUN}
   %\VignetteEngine{knitr::rmarkdown}
@@ -10,6 +10,8 @@ vignette: >
 ---
 
 ```{r setup, echo = FALSE, include=FALSE}
+library(devtools)
+install_github("elvanov/MOGAMUN")
 library(MOGAMUN)
 ```
 

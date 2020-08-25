@@ -53,6 +53,6 @@ mogamun.run(
     LoadedData = LoadedData,
     Cores = 1,
     NumberOfRunsToExecute = 1,
-    ResultsDir = '.'
+    ResultsDir = system.file("ExampleFiles/SampleResults/", package="MOGAMUN")
 )
 }

@@ -229,7 +229,8 @@ mogamun.load.data <- function(EvolutionParameters, DifferentialExpressionPath,
 #'     LoadedData = LoadedData,
 #'     Cores = 1,
 #'     NumberOfRunsToExecute = 1,
-#'     ResultsDir = '.'
+#'     ResultsDir = 
+#'         system.file("ExampleFiles/SampleResults/", package="MOGAMUN")
 #' )
 #' @export
 mogamun.run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
@@ -341,10 +342,12 @@ mogamun.run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
 #'     LoadedData = LoadedData,
 #'     Cores = 1,
 #'     NumberOfRunsToExecute = 1,
-#'     ResultsDir = '.'
+#'     ResultsDir = 
+#'         system.file("ExampleFiles/SampleResults/", package="MOGAMUN")
 #' )
 #' mogamun.postprocess(
-#'     ExperimentDir = '.',
+#'     ExperimentDir = 
+#'         system.file("ExampleFiles/SampleResults/", package="MOGAMUN"),
 #'     LoadedData = LoadedData,
 #'     JaccardSimilarityThreshold = 70,
 #'     VisualizeInCytoscape = FALSE

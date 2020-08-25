@@ -1,11 +1,11 @@
 ---
-title: "MOGAMUN - A Multi-Objective Genetic Algorithm to Find Active Modules in Multiplex Biological Networks"
-author: Elva Ma. Novoa del Toro
+title: "MOGAMUN"
+author: Elva María Novoa del Toro
 package: MOGAMUN
-output: BiocStyle::html_document
+output: BiocStyle::pdf_document
 vignette: >
   %\VignetteIndexEntry{Finding active modules with MOGAMUN}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{knitr::knitr}
   %\VignetteEncoding{UTF-8}  
 ---
 

@@ -71,10 +71,11 @@ mogamun.run(
     LoadedData = LoadedData,
     Cores = 1,
     NumberOfRunsToExecute = 1,
-    ResultsDir = '.'
+    ResultsDir = system.file("ExampleFiles/SampleResults/", package="MOGAMUN")
 )
 mogamun.postprocess(
-    ExperimentDir = '.',
+    ExperimentDir = 
+        system.file("ExampleFiles/SampleResults/", package="MOGAMUN"),
     LoadedData = LoadedData,
     JaccardSimilarityThreshold = 70,
     VisualizeInCytoscape = FALSE

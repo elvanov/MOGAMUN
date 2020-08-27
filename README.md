@@ -37,11 +37,11 @@ foreach(RunNumber = 1:NumberOfRunsToExecute) %dopar% {
 
 MOGAMUN uses two information sources: one or more biological networks and the statistical values resulting from a differential expression analysis or any other test that gives as result *p*-values or False Discovery Rates (FDR) associated to genes. 
 
-The first step (out of three) to run MOGAMUN is to set the values for all parameters (e.g. those related to the evolution process, such as crossover and mutation rates), using the `mogamun.init` command. To see the full list of parameters, see `?mogamun.init`. 
+The first step (out of three) to run MOGAMUN is to set the values for all parameters (e.g. those related to the evolution process, such as crossover and mutation rates), using the `mogamun_init` command. To see the full list of parameters, see `?mogamun_init`. 
 
-The second step is to provide the input data (including the path to the biological networks), using the `mogamun.load.data` command. Please note that each biological network must be in a separate file with 2-column format (separated by tabs), and we strongly recommend to replace the dashes with underscores. To see the full list of parameters, see `?mogamun.load.data`.
+The second step is to provide the input data (including the path to the biological networks), using the `mogamun_load_data` command. Please note that each biological network must be in a separate file with 2-column format (separated by tabs), and we strongly recommend to replace the dashes with underscores. To see the full list of parameters, see `?mogamun_load_data`.
 
-The last step is to run MOGAMUN, using the `mogamun.run` command, giving as parameter the path to the folder where the results will be stored. See `?mogamun.run` for further details.
+The last step is to run MOGAMUN, using the `mogamun_run` command, giving as parameter the path to the folder where the results will be stored. See `?mogamun_run` for further details.
 
 Be aware that the runnig time of for 500 generations was of approximately 12 hours, in a desk computer with Intel processor i7 at 3.60GHz and 32GB of RAM.
 
@@ -50,6 +50,6 @@ Be aware that the runnig time of for 500 generations was of approximately 12 hou
 
 ### Interpreting the results
 
-In the results' path that you specified in `mogamun.run`, you will find two files per run (*MOGAMUN_Results_StatisticsPerGeneration_RunN.csv* and *MOGAMUN_Results__Run_N.txt*). The file *MOGAMUN_Results_StatisticsPerGeneration_RunN.csv* contains the best values of the average nodes score and density per generation (you can use them to check the convergence), and the file *MOGAMUN_Results__Run_N.txt* contains the complete final population (i.e. the subnetworks from the last generation), one per row. The number of elements in every row is variable. If *X_n* is the number of elements in the *n*-th row: the nodes of the subnetwork are the first *X_n*-4 elements. The last four elements are the average nodes score, the density, the rank and the crowding distance, respectively. The best (non-dominated) subnetworks have are those with rank = 1. 
+In the results' path that you specified in `mogamun_run`, you will find two files per run (*MOGAMUN_Results_StatisticsPerGeneration_RunN.csv* and *MOGAMUN_Results__Run_N.txt*). The file *MOGAMUN_Results_StatisticsPerGeneration_RunN.csv* contains the best values of the average nodes score and density per generation (you can use them to check the convergence), and the file *MOGAMUN_Results__Run_N.txt* contains the complete final population (i.e. the subnetworks from the last generation), one per row. The number of elements in every row is variable. If *X_n* is the number of elements in the *n*-th row: the nodes of the subnetwork are the first *X_n*-4 elements. The last four elements are the average nodes score, the density, the rank and the crowding distance, respectively. The best (non-dominated) subnetworks have are those with rank = 1. 
 
 

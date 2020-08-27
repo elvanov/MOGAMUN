@@ -6,7 +6,7 @@
 # elitist generational replacement
 
 
-#' @title mogamun.init
+#' @title mogamun_init
 #'
 #' @description initialize evolution parameters
 #'
@@ -32,7 +32,7 @@
 #'
 #' @examples
 #' EvolutionParameters <- 
-#'     mogamun.init(
+#'     mogamun_init(
 #'         Generations = 1,
 #'         PopSize = 10,
 #'         MinSize = 15,
@@ -59,7 +59,7 @@
 #' @importFrom RCy3 closeSession saveSession
 #' @importFrom graphics boxplot plot legend
 #' @importFrom grDevices svg dev.off rainbow
-mogamun.init <- function(Generations = 500, PopSize = 100,
+mogamun_init <- function(Generations = 500, PopSize = 100,
     MinSize = 15, MaxSize = 50,
     CrossoverRate = 0.8, MutationRate = 0.1, JaccardSimilarityThreshold = 30,
     TournamentSize = 2, Measure = "FDR", ThresholdDEG = 0.05,
@@ -91,11 +91,11 @@ mogamun.init <- function(Generations = 500, PopSize = 100,
     return(EvolutionParameters)    
 }
 
-#' @title mogamun.load.data
+#' @title mogamun_load_data
 #'
 #' @description Load the data to process
 #'
-#' @param EvolutionParameters evolution paramenters returned by mogamun.init()
+#' @param EvolutionParameters evolution paramenters returned by mogamun_init()
 #' @param DifferentialExpressionPath full path to the differential expression 
 #' results file (in CSV format). This file must contain at least the columns 
 #' "gene" with the gene names, and ("PValue" or "FDR"). 
@@ -128,9 +128,9 @@ mogamun.init <- function(Generations = 500, PopSize = 100,
 #'         "extdata/LayersMultiplex/", 
 #'         package = "MOGAMUN"
 #'     )
-#' EvolutionParameters <- mogamun.init(Generations = 1, PopSize = 10)
+#' EvolutionParameters <- mogamun_init(Generations = 1, PopSize = 10)
 #' LoadedData <- 
-#'     mogamun.load.data(
+#'     mogamun_load_data(
 #'         EvolutionParameters = EvolutionParameters,
 #'         DifferentialExpressionPath = DEGPath,
 #'         NodesScoresPath = NodesScoresPath,
@@ -139,7 +139,7 @@ mogamun.init <- function(Generations = 500, PopSize = 100,
 #'     )
 #' @export
 
-mogamun.load.data <- function(EvolutionParameters, DifferentialExpressionPath, 
+mogamun_load_data <- function(EvolutionParameters, DifferentialExpressionPath, 
     NodesScoresPath, NetworkLayersDir, Layers) {
     Measure <- EvolutionParameters$Measure # "FDR" or "PValue"
     ThresholdDEG <- EvolutionParameters$ThresholdDEG # threshold for DEG
@@ -186,12 +186,12 @@ mogamun.load.data <- function(EvolutionParameters, DifferentialExpressionPath,
     return (LoadedData)
 }
 
-#' @title mogamun.run
+#' @title mogamun_run
 #'
 #' @description Run the algorithm with the specified values for the evolution 
 #' parameters
 #'
-#' @param LoadedData list returned by mogamun.load.data()
+#' @param LoadedData list returned by mogamun_load_data()
 #' @param Cores to run MOGAMUN in parallel on the given number of cores (in 
 #' line with the number of physical processor cores) (default = 1)
 #' @param NumberOfRunsToExecute number of runs (default = 1)
@@ -216,16 +216,16 @@ mogamun.load.data <- function(EvolutionParameters, DifferentialExpressionPath,
 #'         "extdata/LayersMultiplex/", 
 #'         package = "MOGAMUN"
 #'     )
-#' EvolutionParameters <- mogamun.init(Generations = 1, PopSize = 10)
+#' EvolutionParameters <- mogamun_init(Generations = 1, PopSize = 10)
 #' LoadedData <- 
-#'     mogamun.load.data(
+#'     mogamun_load_data(
 #'         EvolutionParameters = EvolutionParameters,
 #'         DifferentialExpressionPath = DEGPath,
 #'         NodesScoresPath = NodesScoresPath,
 #'         NetworkLayersDir = LayersPath,
 #'         Layers = "23"
 #'     )
-#' mogamun.run(
+#' mogamun_run(
 #'     LoadedData = LoadedData,
 #'     Cores = 1,
 #'     NumberOfRunsToExecute = 1,
@@ -233,7 +233,7 @@ mogamun.load.data <- function(EvolutionParameters, DifferentialExpressionPath,
 #'         system.file("SampleResults/", package="MOGAMUN")
 #' )
 #' @export
-mogamun.run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
+mogamun_run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
     ResultsDir = '.') {
     registerDoParallel(cores = Cores) # in line with the no. of physical cores
     PopSize <- LoadedData$PopSize
@@ -286,7 +286,7 @@ mogamun.run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
 
 
 
-#' @title mogamun.postprocess
+#' @title mogamun_postprocess
 #'
 #' @description Postprocess the results. This function: 
 #' i) calculates the accumulated Pareto front, i.e. the individuals on the 
@@ -303,8 +303,8 @@ mogamun.run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
 #' (NOTE. Make sure to open Cytoscape if VisualizeInCytoscape is TRUE)
 #'
 #' @param ExperimentDir folder containing the results to be processed. It is 
-#' the same folder specified as ResultsDir in mogamun.run
-#' @param LoadedData list returned by mogamun.load.data()
+#' the same folder specified as ResultsDir in mogamun_run
+#' @param LoadedData list returned by mogamun_load_data()
 #' @param JaccardSimilarityThreshold subnetworks over this Jaccard similarity 
 #' threshold are merged in a single subnetwork
 #' @param VisualizeInCytoscape TRUE if you wish to visualize the accumulated 
@@ -329,23 +329,23 @@ mogamun.run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
 #'         "extdata/LayersMultiplex/", 
 #'         package = "MOGAMUN"
 #'     )
-#' EvolutionParameters <- mogamun.init(Generations = 1, PopSize = 10)
+#' EvolutionParameters <- mogamun_init(Generations = 1, PopSize = 10)
 #' LoadedData <- 
-#'     mogamun.load.data(
+#'     mogamun_load_data(
 #'         EvolutionParameters = EvolutionParameters,
 #'         DifferentialExpressionPath = DEGPath,
 #'         NodesScoresPath = NodesScoresPath,
 #'         NetworkLayersDir = LayersPath,
 #'         Layers = "23"
 #'     )
-#' mogamun.run(
+#' mogamun_run(
 #'     LoadedData = LoadedData,
 #'     Cores = 1,
 #'     NumberOfRunsToExecute = 1,
 #'     ResultsDir = 
 #'         system.file("SampleResults/", package="MOGAMUN")
 #' )
-#' mogamun.postprocess(
+#' mogamun_postprocess(
 #'     ExperimentDir = 
 #'         system.file("SampleResults/", package="MOGAMUN"),
 #'     LoadedData = LoadedData,
@@ -354,7 +354,7 @@ mogamun.run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
 #' ) 
 #'
 #' @export
-mogamun.postprocess <- function(ExperimentDir = '.', LoadedData = LoadedData,
+mogamun_postprocess <- function(ExperimentDir = '.', LoadedData = LoadedData,
     JaccardSimilarityThreshold = 70, VisualizeInCytoscape = TRUE) {
     
     PostprocessResults(ExperimentDir = ExperimentDir, LoadedData = LoadedData, 

@@ -1,9 +1,9 @@
 # These are the unit test to check the functionality of the four main functions
 # of MOGAMUN
 
-test.mogamun.init <- function() {
+test.mogamun_init <- function() {
     EvolutionParameters <- 
-        mogamun.init(
+        mogamun_init(
             Generations = 1, PopSize = 10, MinSize = 10, MaxSize = 20, 
             CrossoverRate = 1, MutationRate = 1, 
             JaccardSimilarityThreshold = 30, TournamentSize = 2, 
@@ -29,7 +29,7 @@ test.mogamun.init <- function() {
 }
 
 
-test.mogamun.load.data <- function() {
+test.mogamun_load_data <- function() {
     DEGPath <- system.file("extdata/DE/Sample_DE.csv", package = "MOGAMUN")
     
     NodesScoresPath <- system.file("extdata/DE/Sample_NodesScore.csv", 
@@ -39,12 +39,12 @@ test.mogamun.load.data <- function() {
         package = "MOGAMUN")
     
     EvolutionParameters <- 
-        mogamun.init(
+        mogamun_init(
             Generations = 1, PopSize = 10, MinSize = 10, MaxSize = 20, 
             CrossoverRate = 1, MutationRate = 1, MaxNumberOfAttempts = 1)
     
     LoadedData <- 
-        mogamun.load.data(
+        mogamun_load_data(
             EvolutionParameters = EvolutionParameters,
             DifferentialExpressionPath = DEGPath, 
             NodesScoresPath = NodesScoresPath, NetworkLayersDir = LayersPath, 
@@ -91,7 +91,7 @@ test.mogamun.load.data <- function() {
     checkTrue(is.igraph(LoadedData$Merged))
 }
 
-test.mogamun.run <- function() {
+test.mogamun_run <- function() {
     DEGPath <- system.file("extdata/DE/Sample_DE.csv", package = "MOGAMUN")
     
     NodesScoresPath <- system.file("extdata/DE/Sample_NodesScore.csv", 
@@ -101,12 +101,12 @@ test.mogamun.run <- function() {
                               package = "MOGAMUN")
     
     EvolutionParameters <- 
-        mogamun.init(
+        mogamun_init(
             Generations = 1, PopSize = 10, MinSize = 10, MaxSize = 20, 
             CrossoverRate = 1, MutationRate = 1, MaxNumberOfAttempts = 1)
     
     LoadedData <- 
-        mogamun.load.data(
+        mogamun_load_data(
             EvolutionParameters = EvolutionParameters,
             DifferentialExpressionPath = DEGPath, 
             NodesScoresPath = NodesScoresPath, NetworkLayersDir = LayersPath, 
@@ -114,7 +114,7 @@ test.mogamun.run <- function() {
     
     set.seed(123)
     ResDir <- system.file("SampleResults/", package="MOGAMUN")
-    mogamun.run(LoadedData = LoadedData, ResultsDir = ResDir)    
+    mogamun_run(LoadedData = LoadedData, ResultsDir = ResDir)    
     
     # check existence of results' folder and files 
     ResDirAll <- paste0(ResDir, "Experiment_", Sys.Date())
@@ -136,7 +136,7 @@ test.mogamun.run <- function() {
 #    unlink(ResDirAll, recursive = TRUE)
 }
 
-test.mogamun.postprocess <- function() {
+test.mogamun_postprocess <- function() {
     DEGPath <- system.file("extdata/DE/Sample_DE.csv", package = "MOGAMUN")
     
     NodesScoresPath <- system.file("extdata/DE/Sample_NodesScore.csv", 
@@ -146,12 +146,12 @@ test.mogamun.postprocess <- function() {
                               package = "MOGAMUN")
     
     EvolutionParameters <- 
-        mogamun.init(
+        mogamun_init(
             Generations = 1, PopSize = 10, MinSize = 10, MaxSize = 20, 
             CrossoverRate = 1, MutationRate = 1, MaxNumberOfAttempts = 1)
     
     LoadedData <- 
-        mogamun.load.data(
+        mogamun_load_data(
             EvolutionParameters = EvolutionParameters,
             DifferentialExpressionPath = DEGPath, 
             NodesScoresPath = NodesScoresPath, NetworkLayersDir = LayersPath, 
@@ -159,9 +159,9 @@ test.mogamun.postprocess <- function() {
     
     set.seed(123)
     ResDir <- system.file("SampleResults/", package="MOGAMUN")
-    mogamun.run(LoadedData = LoadedData, ResultsDir = ResDir)     
+    mogamun_run(LoadedData = LoadedData, ResultsDir = ResDir)     
     
-    mogamun.postprocess(
+    mogamun_postprocess(
         ExperimentDir = ResDir,
         LoadedData = LoadedData,
         JaccardSimilarityThreshold = 70,

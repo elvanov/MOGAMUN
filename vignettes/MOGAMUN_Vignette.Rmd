@@ -34,7 +34,7 @@ parameters, providing input data and running the algorithm.
 ## Initialization of parameters 
 We set here the values for the evolution parameters and other general 
 parameters, such as the minimum and maximun sizes of the subnetworks, via 
-`mogamun.init`. In total, there are 11 customizable parameters: 
+`mogamun_init`. In total, there are 11 customizable parameters: 
 
 * `PopSize` is an integer that determines the size of the population 
 (*default = 100*).
@@ -69,7 +69,7 @@ list of significantly differentially expressed genes (*default  = FDR*).
 (*default = 0.05*).
 
 If MOGAMUN is to be run with the default values, execute 
-`EvolutionParameters <- mogamun.init()`. Otherwise, specify the parameters to 
+`EvolutionParameters <- mogamun_init()`. Otherwise, specify the parameters to 
 change, separated by commas. Please be aware than although we recommend to let 
 the evolution run for 500 generations, this process can be long. For instance, 
 using a multiplex networks with the three layers that we provide in 
@@ -79,7 +79,7 @@ Intel processor i7 at 3.60GHz and 32GB of RAM.
 
 
 ```{r init, echo = TRUE, message = FALSE}
-parameters <- mogamun.init(Generations = 1, PopSize = 10)
+parameters <- mogamun_init(Generations = 1, PopSize = 10)
 ```
 
 
@@ -88,15 +88,15 @@ MOGAMUN uses two sources of information: one or more biological networks, and
 the statistical values resulting from a differential expression analysis or any 
 other test that gives as result *p*-values or False Discovery Rates (FDR) 
 associated to genes. The second step of the workflow is to provide the input 
-data using the `mogamun.load.data` function, which has 5 parameters:
+data using the `mogamun_load_data` function, which has 5 parameters:
 
-* `EvolutionParameters` is the list returned by `mogamun.init`.
+* `EvolutionParameters` is the list returned by `mogamun_init`.
 * `DifferentialExpressionPath` is a string with the full path to the 
 **comma separated** file containing the results of the differential expression 
 analysis. Please note that such file must be composed of at least two columns: 
 "gene" and `Measure`. The column "gene" must contain **gene names** and the 
 column `Measure` must be called either "FDR" or "PValue" (depending on which of 
-the two was seleced in `mogamun.init`) and it should contain the results of the 
+the two was seleced in `mogamun_init`) and it should contain the results of the 
 statistical test. We strongly recommend to have a third columm ("logFC") with 
 the $log_2(fold\_change)$, i.e. the ratio of difference of the expression 
 between the two groups under study (e.g. patients vs control). There is a 
@@ -122,7 +122,7 @@ layersPath <-
     system.file("extdata/LayersMultiplex/", package = "MOGAMUN")
 
 loadedData <-
-    mogamun.load.data(
+    mogamun_load_data(
         EvolutionParameters = parameters,
         DifferentialExpressionPath = dePath,
         NodesScoresPath = scoresPath,
@@ -133,9 +133,9 @@ loadedData <-
 
 ## Running the algorithm
 Once we have defined all the parameters and provided the input data, we are 
-ready to run MOGAMUN using the `mogamun.run` function, which has 4 parameters: 
+ready to run MOGAMUN using the `mogamun_run` function, which has 4 parameters: 
 
-* `LoadedData` is the list returned by `mogamun.load.data`
+* `LoadedData` is the list returned by `mogamun_load_data`
 * `Cores` is an integer that determines the number of cores that will be used 
 to run MOGAMUN. This number must be in line with the number of physical 
 processor cores (*default = 1*). One core is needed per run. 
@@ -148,7 +148,7 @@ sequentially.
 results must be stored (*default = '.'*, i.e. current working directory).
 
 ```{r run, echo = TRUE}
-mogamun.run(LoadedData = loadedData, ResultsDir = '.')
+mogamun_run(LoadedData = loadedData, ResultsDir = '.')
 ```
 
 In the results directory (`ResultsDir`) you will find a subfolder which name 
@@ -185,7 +185,7 @@ having two different networks if they only differ for one node, for instance
 
 Depending on the number of runs you execute, there are other plots that might 
 be generated during the postprocessing, such as scatter plots (always) and 
-boxplots (only if `NumberOfRunsToExecute` in `mogamun.run` > 1).
+boxplots (only if `NumberOfRunsToExecute` in `mogamun_run` > 1).
 
 Finally, it is possible to visualize the subnetworks from the accumulated 
 Pareto front in Cytoscape. Please note that the network you used to build the 
@@ -196,13 +196,13 @@ white means no deregulation. Nodes corresponding to significantly
 differentially expressed genes will have black border, and the color of the 
 edges will be different for each layer of the multiplex network. 
 
-The postprocessing is done with the function `mogamun.postprocess`, which has 
+The postprocessing is done with the function `mogamun_postprocess`, which has 
 4 parameters:  
 
 * `ExperimentDir` is a string with the full path to the directory where the 
 results are stored. It must coincide with the `ResultsDir` folder from 
-`mogamun.run`.
-* `LoadedData` is the list returned by `mogamun.load.data`.
+`mogamun_run`.
+* `LoadedData` is the list returned by `mogamun_load_data`.
 * `JaccardSimilarityThreshold` is an integer that determines the minimum 
 Jaccard similarity coefficient that a pair of subnetworks must have to be 
 merged in a single subnetwork (default = 70).
@@ -211,7 +211,7 @@ whether the accumulated Pareto front is to be displayed in Cytoscape or not.
 NOTE. When `VisualizeInCytoscape` is TRUE, Cytoscape needs to be up and running 
 in the computer (default = TRUE). 
 
-Please note that you can make use of `mogamun.postprocess` with any number of 
+Please note that you can make use of `mogamun_postprocess` with any number of 
 runs. If the experiment to be postprocessed contains a single run, the result 
 will be the set of subnetworks in the first Pareto front. Otherwise, the result 
 will be the accumulated Pareto front, as we already explained. 

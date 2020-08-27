@@ -1203,7 +1203,7 @@ SaveFinalPop <- function (BestIndividualsFile, Population, N, Network) {
 #
 # INPUTS: ExperimentDir - folder containing the results to be processed
 #         LoadedData - list containing several important variables 
-#                      (see mogamun.load.data())    
+#                      (see mogamun_load_data())    
 #         JaccardSimilarityThreshold - subnetworks over this Jaccard similarity 
 #                                      threshold are merged 
 #         VisualizeInCytoscape - boolean value. If it is TRUE, a Cytoscape file 
@@ -1360,7 +1360,7 @@ SimilarityBetweenRunsBoxplot <- function(PathForPlots, Nodes1stRank_AllRuns) {
 #         Inds1stRank_AllRuns - individuals with Rank = 1 from all runs
 #         Nodes1stRank_AllRuns - nodes in Inds1stRank_AllRuns
 #         LoadedData - list containing several important variables 
-#                      (see mogamun.load.data())    
+#                      (see mogamun_load_data())    
 # OUTPUT: individuals in the accumulated Pareto front
 ObtainAccParetoFront <- function(PathForPlots, Inds1stRank_AllRuns, 
     Nodes1stRank_AllRuns, LoadedData) {
@@ -1452,7 +1452,7 @@ RemoveIdenticalInds <- function(AccPF) {
 #
 # INPUTS: ExperimentsPath - folder to save the filtered networks
 #         LoadedData - list containing several important variables 
-#                      (see mogamun.load.data())    
+#                      (see mogamun_load_data())    
 #         AccPF - filtered accumulated Pareto front
 # OUTPUT: None
 FilterNetworks <- function(ExperimentsPath, LoadedData, AccPF) {
@@ -1540,7 +1540,7 @@ GetSimilarInds <- function(DiversePop, Threshold) {
 #
 # INPUTS: AccPF - filtered accumulated Pareto front
 #         LoadedData - list containing several important variables 
-#                      (see mogamun.load.data())    
+#                      (see mogamun_load_data())    
 #         Threshold - subnetworks over this Jaccard similarity are merged 
 # OUTPUT: None
 JoinSimilarInds <- function(AccPF, LoadedData, Threshold) {
@@ -1638,7 +1638,7 @@ SaveFilteredAccPF <- function(DiversePopulation, ExperimentsPath, Threshold) {
 #
 # INPUTS: ExperimentDir - folder containing the results to be processed
 #         LoadedData - list containing several important variables 
-#                      (see mogamun.load.data())
+#                      (see mogamun_load_data())
 # OUTPUT: None
 CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
     cytoscapePing() # verify that Cytoscape is launched
@@ -1698,7 +1698,7 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
 # INPUTS: Network - list of edges
 #         d - Directory containing the results of one experiment
 #         LoadedData - list containing several important variables 
-#                      (see mogamun.load.data())
+#                      (see mogamun_load_data())
 # OUTPUT: None
 FormatNodesAndEdges <- function(Network, d, LoadedData) {
     # read expression data

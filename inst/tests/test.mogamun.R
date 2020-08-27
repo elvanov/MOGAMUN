@@ -30,12 +30,12 @@ test.mogamun.init <- function() {
 
 
 test.mogamun.load.data <- function() {
-    DEGPath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
+    DEGPath <- system.file("extdata/DE/Sample_DE.csv", package = "MOGAMUN")
     
-    NodesScoresPath <- system.file("ExampleFiles/DE/Sample_NodesScore.csv", 
+    NodesScoresPath <- system.file("extdata/DE/Sample_NodesScore.csv", 
         package = "MOGAMUN")
     
-    LayersPath <- system.file("ExampleFiles/LayersMultiplex/", 
+    LayersPath <- system.file("extdata/LayersMultiplex/", 
         package = "MOGAMUN")
     
     EvolutionParameters <- 
@@ -92,12 +92,12 @@ test.mogamun.load.data <- function() {
 }
 
 test.mogamun.run <- function() {
-    DEGPath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
+    DEGPath <- system.file("extdata/DE/Sample_DE.csv", package = "MOGAMUN")
     
-    NodesScoresPath <- system.file("ExampleFiles/DE/Sample_NodesScore.csv", 
+    NodesScoresPath <- system.file("extdata/DE/Sample_NodesScore.csv", 
                                    package = "MOGAMUN")
     
-    LayersPath <- system.file("ExampleFiles/LayersMultiplex/", 
+    LayersPath <- system.file("extdata/LayersMultiplex/", 
                               package = "MOGAMUN")
     
     EvolutionParameters <- 
@@ -113,7 +113,7 @@ test.mogamun.run <- function() {
             Layers = "23")
     
     set.seed(123)
-    ResDir <- str_replace(DEGPath, "DE/Sample_DE.csv", "")
+    ResDir <- system.file("SampleResults/", package="MOGAMUN")
     mogamun.run(LoadedData = LoadedData, ResultsDir = ResDir)    
     
     # check existence of results' folder and files 
@@ -123,12 +123,12 @@ test.mogamun.run <- function() {
     Files <- list.files(ResDirAll, pattern = "MOGAMUN_Results_")
     checkIdentical(c("MOGAMUN_Results__Run_1.txt", 
         "MOGAMUN_Results_StatisticsPerGeneration_Run1.csv"), Files)
-    SampleFiles <- list.files(paste0(ResDir, "SampleResults"))
+    SampleFiles <- list.files(ResDir, recursive = FALSE)
 
     # check that the file that was created corresponds to the expected output
     for (f in Files) {
         RealOutput <- readLines(paste0(ResDirAll, "/", f))
-        ExpectedOutput <- readLines(paste0(ResDir, "SampleResults/", f))
+        ExpectedOutput <- readLines(paste0(ResDir, f))
         checkIdentical(RealOutput, ExpectedOutput)
     }
     
@@ -137,12 +137,12 @@ test.mogamun.run <- function() {
 }
 
 test.mogamun.postprocess <- function() {
-    DEGPath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
+    DEGPath <- system.file("extdata/DE/Sample_DE.csv", package = "MOGAMUN")
     
-    NodesScoresPath <- system.file("ExampleFiles/DE/Sample_NodesScore.csv", 
+    NodesScoresPath <- system.file("extdata/DE/Sample_NodesScore.csv", 
                                    package = "MOGAMUN")
     
-    LayersPath <- system.file("ExampleFiles/LayersMultiplex/", 
+    LayersPath <- system.file("extdata/LayersMultiplex/", 
                               package = "MOGAMUN")
     
     EvolutionParameters <- 
@@ -158,7 +158,7 @@ test.mogamun.postprocess <- function() {
             Layers = "23")
     
     set.seed(123)
-    ResDir <- str_replace(DEGPath, "DE/Sample_DE.csv", "")
+    ResDir <- system.file("SampleResults/", package="MOGAMUN")
     mogamun.run(LoadedData = LoadedData, ResultsDir = ResDir)     
     
     mogamun.postprocess(
@@ -182,12 +182,12 @@ test.mogamun.postprocess <- function() {
         )
     checkTrue(all(ExpectedFiles %in% ResFiles))
     
-    SampleFiles <- list.files(paste0(ResDir, "SampleResults"))
+    SampleFiles <- list.files(ResDir, recursive = FALSE)
     
     # check content of files
     for (f in SampleFiles) {
         RealOutput <- readLines(paste0(ResDirAll, "/", f))
-        ExpectedOutput <- readLines(paste0(ResDir, "SampleResults/", f))
+        ExpectedOutput <- readLines(paste0(ResDir, f))
         checkIdentical(RealOutput, ExpectedOutput)
     }
     

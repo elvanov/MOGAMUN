@@ -73,9 +73,9 @@ If MOGAMUN is to be run with the default values, execute
 change, separated by commas. Please be aware than although we recommend to let 
 the evolution run for 500 generations, this process can be long. For instance, 
 using a multiplex networks with the three layers that we provide in 
-*MOGAMUN/ExampleFiles.zip* and the default values for all the parameters, the 
-process took approximately 12 hours in a desktop computer with Intel processor 
-i7 at 3.60GHz and 32GB of RAM.
+https://github.com/elvanov/MOGAMUN-data and the default values for all the 
+parameters, the process took approximately 12 hours in a desktop computer with 
+Intel processor i7 at 3.60GHz and 32GB of RAM.
 
 
 ```{r init, echo = TRUE, message = FALSE}
@@ -100,7 +100,7 @@ the two was seleced in `mogamun.init`) and it should contain the results of the
 statistical test. We strongly recommend to have a third columm ("logFC") with 
 the $log_2(fold\_change)$, i.e. the ratio of difference of the expression 
 between the two groups under study (e.g. patients vs control). There is a 
-sample file in *MOGAMUN/ExampleFiles/DE/Sample_DE.csv*.
+sample file in *MOGAMUN/extdata/DE/Sample_DE.csv*.
 * `NodesScoresPath` is a string with the full path to the **comma separated** 
 file containing the nodes scores for every node in the network. Please note 
 that if this file does not exist, MOGAMUN will create it. 
@@ -109,17 +109,17 @@ that contains the networks that will compose the multiplex network. Please note
 that each biological network must be in a separate file with 2-column 
 **tab separated** format. The name of each file must start with a different 
 character, which will be used in the `Layers` parameter. There are two example 
-files in *MOGAMUN/ExampleFiles/LayersMultiplex*.
+files in *MOGAMUN/extdata/LayersMultiplex*.
 * `Layers` is a string composed of a chain of characters that determine which 
 files from the `NetworkLayersDir` are to be used to build the multiplex network 
 (e.g. "123" to use the networks which names start with "1", "2", and "3").
 
 ```{r load, echo = TRUE}
-dePath <- system.file("ExampleFiles/DE/Sample_DE.csv", package = "MOGAMUN")
+dePath <- system.file("extdata/DE/Sample_DE.csv", package = "MOGAMUN")
 scoresPath <-
-    system.file("ExampleFiles/DE/Sample_NodesScore.csv", package = "MOGAMUN")
+    system.file("extdata/DE/Sample_NodesScore.csv", package = "MOGAMUN")
 layersPath <-
-    system.file("ExampleFiles/LayersMultiplex/", package = "MOGAMUN")
+    system.file("extdata/LayersMultiplex/", package = "MOGAMUN")
 
 loadedData <-
     mogamun.load.data(

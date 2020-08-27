@@ -1,0 +1,30 @@
+citHeader("To cite the 'MOGAMUN' package in publications use:")
+
+year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date, perl = TRUE)
+vers <- paste("R package version", meta$Version)
+
+citEntry(
+    entry="misc",
+    title = "A Multi-Objective Genetic Algorithm to Find Active Modules in Multiplex Biological Networks",
+    author = 
+        personList(
+            as.person("Elva-María Novoa-del-Toro"),
+            as.person("Efrén Mezura-Montes"), 
+            as.person("Matthieu Vignes"),
+            as.person("Frédérique Magdinier,"),
+            as.person("Laurent Tichit"),
+            as.person("Anaïs Baudot")
+        ),
+    year = "2020",
+    note = 
+        paste(
+            "Preprint available in",
+            "https://www.biorxiv.org/content/10.1101/2020.05.25.114215v1"),
+    textVersion =
+        paste("Elva-María Novoa-del-Toro, Efrén Mezura-Montes, Matthieu Vignes, Frédérique Magdinier, Laurent Tichit, and Anaïs Baudot:", 
+            "A Multi-Objective Genetic Algorithm to Find Active Modules in",
+            "Multiplex Biological Networks.",
+            "https://www.biorxiv.org/content/10.1101/2020.05.25.114215v1",
+            "(2020).", sep = " "
+        )
+)

@@ -45,7 +45,7 @@ The last step is to run MOGAMUN, using the `mogamun.run` command, giving as para
 
 Be aware that the runnig time of for 500 generations was of approximately 12 hours, in a desk computer with Intel processor i7 at 3.60GHz and 32GB of RAM.
 
-**Important note.** You can find a full set of example files to run MOGAMUN in [MOGAMUN github page - ExampleFiles.rar](https://github.com/elvanov/MOGAMUN)
+**Important note.** You can find a full set of example files to run MOGAMUN in [MOGAMUN data github page](https://github.com/elvanov/MOGAMUN-data)
 
 
 ### Interpreting the results

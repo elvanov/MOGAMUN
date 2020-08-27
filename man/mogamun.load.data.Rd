@@ -41,17 +41,17 @@ Load the data to process
 \examples{
 DEGPath <- 
     system.file(
-        "ExampleFiles/DE/Sample_DE.csv", 
+        "extdata/DE/Sample_DE.csv", 
         package = "MOGAMUN"
     )
 NodesScoresPath <- 
     system.file(
-        "ExampleFiles/DE/Sample_NodesScore.csv", 
+        "extdata/DE/Sample_NodesScore.csv", 
         package = "MOGAMUN"
     )
 LayersPath <- 
     system.file(
-        "ExampleFiles/LayersMultiplex/", 
+        "extdata/LayersMultiplex/", 
         package = "MOGAMUN"
     )
 EvolutionParameters <- mogamun.init(Generations = 1, PopSize = 10)

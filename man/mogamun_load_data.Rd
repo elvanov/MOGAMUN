@@ -39,21 +39,11 @@ List with the data to process
 Load the data to process
 }
 \examples{
-DEGPath <- 
-    system.file(
-        "extdata/DE/Sample_DE.csv", 
-        package = "MOGAMUN"
-    )
+DEGPath <- system.file("extdata/DE/Sample_DE.csv", package = "MOGAMUN")
 NodesScoresPath <- 
-    system.file(
-        "extdata/DE/Sample_NodesScore.csv", 
-        package = "MOGAMUN"
-    )
+    system.file("extdata/DE/Sample_NodesScore.csv", package = "MOGAMUN")
 LayersPath <- 
-    system.file(
-        "extdata/LayersMultiplex/", 
-        package = "MOGAMUN"
-    )
+    paste0(system.file("extdata/LayersMultiplex", package = "MOGAMUN"), "/")
 EvolutionParameters <- mogamun_init(Generations = 1, PopSize = 10)
 LoadedData <- 
     mogamun_load_data(

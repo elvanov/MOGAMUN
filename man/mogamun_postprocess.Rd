@@ -43,21 +43,11 @@ JaccardSimilarityThreshold
 }
 \examples{
 
-DEGPath <- 
-    system.file(
-        "extdata/DE/Sample_DE.csv", 
-        package = "MOGAMUN"
-    )
+DEGPath <- system.file("extdata/DE/Sample_DE.csv", package = "MOGAMUN")
 NodesScoresPath <- 
-    system.file(
-        "extdata/DE/Sample_NodesScore.csv", 
-        package = "MOGAMUN"
-    )
+    system.file("extdata/DE/Sample_NodesScore.csv", package = "MOGAMUN")
 LayersPath <- 
-    system.file(
-        "extdata/LayersMultiplex/", 
-        package = "MOGAMUN"
-    )
+    paste0(system.file("extdata/LayersMultiplex", package = "MOGAMUN"), "/")
 EvolutionParameters <- mogamun_init(Generations = 1, PopSize = 10)
 LoadedData <- 
     mogamun_load_data(
@@ -67,15 +57,15 @@ LoadedData <-
         NetworkLayersDir = LayersPath,
         Layers = "23"
     )
+ResultsDir <- paste0(system.file("SampleResults", package="MOGAMUN"), "/")
 mogamun_run(
     LoadedData = LoadedData,
     Cores = 1,
     NumberOfRunsToExecute = 1,
-    ResultsDir = system.file("SampleResults/", package="MOGAMUN")
+    ResultsDir = ResultsDir
 )
 mogamun_postprocess(
-    ExperimentDir = 
-        system.file("SampleResults/", package="MOGAMUN"),
+    ExperimentDir = ResultsDir,
     LoadedData = LoadedData,
     JaccardSimilarityThreshold = 70,
     VisualizeInCytoscape = FALSE

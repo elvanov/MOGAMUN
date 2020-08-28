@@ -15,7 +15,7 @@ pattern <- "^test.*\\.R$"
 testFunctionRegexp = "^test.+"
 
 # Path to the unit tests folder in the package
-dir <- system.file("tests/", package=pkgname)
+dir <- paste0(system.file("tests", package=pkgname), "/")
 
 # Define RUnit test suite
 suite <- defineTestSuite(name=paste(pkgname, "RUnit Tests"),

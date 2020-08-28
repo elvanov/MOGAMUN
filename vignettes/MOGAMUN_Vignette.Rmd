@@ -119,7 +119,7 @@ dePath <- system.file("extdata/DE/Sample_DE.csv", package = "MOGAMUN")
 scoresPath <-
     system.file("extdata/DE/Sample_NodesScore.csv", package = "MOGAMUN")
 layersPath <-
-    system.file("extdata/LayersMultiplex/", package = "MOGAMUN")
+    paste0(system.file("extdata/LayersMultiplex", package = "MOGAMUN"), "/")
 
 loadedData <-
     mogamun_load_data(

@@ -32,11 +32,11 @@ test.mogamun_init <- function() {
 test.mogamun_load_data <- function() {
     DEGPath <- system.file("extdata/DE/Sample_DE.csv", package = "MOGAMUN")
     
-    NodesScoresPath <- system.file("extdata/DE/Sample_NodesScore.csv", 
-        package = "MOGAMUN")
+    NodesScoresPath <- 
+        system.file("extdata/DE/Sample_NodesScore.csv", package = "MOGAMUN")
     
-    LayersPath <- system.file("extdata/LayersMultiplex/", 
-        package = "MOGAMUN")
+    LayersPath <- 
+        paste0(system.file("extdata/LayersMultiplex", package = "MOGAMUN"), "/")
     
     EvolutionParameters <- 
         mogamun_init(
@@ -94,11 +94,11 @@ test.mogamun_load_data <- function() {
 test.mogamun_run <- function() {
     DEGPath <- system.file("extdata/DE/Sample_DE.csv", package = "MOGAMUN")
     
-    NodesScoresPath <- system.file("extdata/DE/Sample_NodesScore.csv", 
-                                   package = "MOGAMUN")
+    NodesScoresPath <- 
+        system.file("extdata/DE/Sample_NodesScore.csv", package = "MOGAMUN")
     
-    LayersPath <- system.file("extdata/LayersMultiplex/", 
-                              package = "MOGAMUN")
+    LayersPath <- 
+        paste0(system.file("extdata/LayersMultiplex", package = "MOGAMUN"), "/")
     
     EvolutionParameters <- 
         mogamun_init(
@@ -113,7 +113,7 @@ test.mogamun_run <- function() {
             Layers = "23")
     
     set.seed(123)
-    ResDir <- system.file("SampleResults/", package="MOGAMUN")
+    ResDir <- paste0(system.file("SampleResults", package="MOGAMUN"), "/")
     mogamun_run(LoadedData = LoadedData, ResultsDir = ResDir)    
     
     # check existence of results' folder and files 
@@ -139,11 +139,11 @@ test.mogamun_run <- function() {
 test.mogamun_postprocess <- function() {
     DEGPath <- system.file("extdata/DE/Sample_DE.csv", package = "MOGAMUN")
     
-    NodesScoresPath <- system.file("extdata/DE/Sample_NodesScore.csv", 
-                                   package = "MOGAMUN")
+    NodesScoresPath <- 
+        system.file("extdata/DE/Sample_NodesScore.csv", package = "MOGAMUN")
     
-    LayersPath <- system.file("extdata/LayersMultiplex/", 
-                              package = "MOGAMUN")
+    LayersPath <- 
+        paste0(system.file("extdata/LayersMultiplex", package = "MOGAMUN"), "/")
     
     EvolutionParameters <- 
         mogamun_init(
@@ -158,7 +158,7 @@ test.mogamun_postprocess <- function() {
             Layers = "23")
     
     set.seed(123)
-    ResDir <- system.file("SampleResults/", package="MOGAMUN")
+    ResDir <- paste0(system.file("SampleResults", package="MOGAMUN"), "/")
     mogamun_run(LoadedData = LoadedData, ResultsDir = ResDir)     
     
     mogamun_postprocess(

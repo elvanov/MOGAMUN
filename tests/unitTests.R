@@ -15,21 +15,27 @@ pattern <- "^test.*\\.R$"
 testFunctionRegexp = "^test.+"
 
 # Path to the unit tests folder in the package
-dir <- paste0(system.file("tests", package=pkgname), "/")
+directory <- paste0(system.file("tests", package=pkgname), "/")
+if (.Platform$OS.type == "windows") { # windows needs the absolute file names
+    directory <- list.files(directory, pattern = pattern, full.names = TRUE)
+} 
 
-# Define RUnit test suite
-suite <- defineTestSuite(name=paste(pkgname, "RUnit Tests"),
-                         dirs=dir,
-                         testFileRegexp=pattern,
-                         testFuncRegexp = testFunctionRegexp,
-                         rngKind="default",
-                         rngNormalKind="default")
+for (dir in directory) {
+    # Define RUnit test suite
+    suite <- defineTestSuite(name=paste(pkgname, "RUnit Tests"),
+                             dirs=dir,
+                             testFileRegexp=pattern,
+                             testFuncRegexp = testFunctionRegexp,
+                             rngKind="default",
+                             rngNormalKind="default")
+    
+    # Run tests
+    result <- runTestSuite(suite)
+    
+    # Display result tests on the console
+    printTextProtocol(result)
+    
+    # Write results in JUnit-like xml format
+    printJUnitProtocol(result, fileName="junit.xml")
+}
 
-# Run tests
-result <- runTestSuite(suite)
-
-# Display result tests on the console
-printTextProtocol(result)
-
-# Write results in JUnit-like xml format
-printJUnitProtocol(result, fileName="junit.xml")

@@ -73,7 +73,8 @@ GenerateMergedNetwork <- function(Files, Multiplex) {
     # create merged network, keeping the same order of the nodes as in the mx
     MergedNetwork <- 
         graph_from_data_frame(
-            d = Merged, vertices = names(V(Multiplex[[1]])), directed = FALSE
+            d = Merged, vertices = names(igraph::V(Multiplex[[1]])), 
+            directed = FALSE
         )
     
     return (MergedNetwork)
@@ -229,7 +230,7 @@ DFS_iterative_Mx <- function (MyMx, Root, SizeOfIndividual, LoadedData) {
     ##### subnetwork, but the individuals should always have IDs with respect 
     ##### to the global network, therefore the IDs need to be "re-calculated"
     
-    Nodes <- names(V(MyMx[[1]])[Result]) # get local nodes' names
+    Nodes <- names(igraph::V(MyMx[[1]])[Result]) # get local nodes' names
     NodesIDs <- GetIDOfNodes(Nodes, Multiplex[[1]]) # get IDs
     
     return (NodesIDs)
@@ -273,7 +274,8 @@ MakeDFS <- function(MyMx, Root, SizeOfIndividual) {
             AvLayers <- seq_len(length(MyMx))
             
             while (KeepGoing == TRUE) {
-                MyNeighbors <- names(neighbors(MyMx[[CurrentLayer]], Node)) 
+                MyNeighbors <- 
+                    names(igraph::neighbors(MyMx[[CurrentLayer]], Node)) 
                 MyNeighbors <- MyNeighbors[!MyNeighbors %in% Discovered] 
                 
                 if (length(MyNeighbors) == 0) {
@@ -303,7 +305,7 @@ MakeDFS <- function(MyMx, Root, SizeOfIndividual) {
 PickRoot <- function (MyMx, LoadedData) {
     DEG <- LoadedData$DEG
     
-    SearchSpaceGenes <- names( V(MyMx[[1]]) )
+    SearchSpaceGenes <- names(igraph::V(MyMx[[1]]))
     
     # get the list of all the DE genes (from the whole DE analysis test)
     DEGenesNames <- as.character(DEG$gene)
@@ -362,7 +364,7 @@ EvaluateInd <- function (Individual, MultiplexNetwork, LoadedData) {
         
         # gets the sum of the nodes scores of the subnetwork
         SumNodesScores <- sum(GenesNS[GenesNS$gene %in% 
-            V(MultiplexNetwork[[1]])$name[Individual], "nodescore"])
+            igraph::V(MultiplexNetwork[[1]])$name[Individual], "nodescore"])
         
         AverageNodesScore <- SumNodesScores / length(Individual)
         
@@ -372,10 +374,10 @@ EvaluateInd <- function (Individual, MultiplexNetwork, LoadedData) {
         for (layer in seq_len(length(MultiplexNetwork))) {
             # get the inds subnetwork corresponding in the current layer
             Subnetwork <- 
-                induced_subgraph(MultiplexNetwork[[layer]], Individual)
+                igraph::induced_subgraph(MultiplexNetwork[[layer]], Individual)
             
             # calculate the density of the subnetwork in the current layer
-            SubnetworkDensity <- graph.density(Subnetwork)
+            SubnetworkDensity <- igraph::graph.density(Subnetwork)
             if (is.nan(SubnetworkDensity)) {
                 SubnetworkDensity <- 0
             }
@@ -600,7 +602,7 @@ GetNeighbors <- function(NodeList, Multiplex) {
         # add to the list the neighbors of the node list in the current layer
         Neighbors <- 
             c(Neighbors, unlist(lapply(NodeList, function(X) {
-                neighbors(Multiplex[[i]], X)})))
+                igraph::neighbors(Multiplex[[i]], X)})))
     }
     
     # sort result and delete duplicates
@@ -702,7 +704,7 @@ BFS_iterative_Mx <- function (MyMx, Root, SizeOfIndividual, LoadedData) {
     ##### to the global network, therefore the IDs need to be "re-calculated"
     
     # get the names of the nodes in the local network with the local IDs
-    Nodes <- names(V(MyMx[[1]])[Result])
+    Nodes <- names(igraph::V(MyMx[[1]])[Result])
     
     # get the global IDs of the corresponding nodes
     NodesIDs <- GetIDOfNodes(Nodes, Multiplex[[1]])
@@ -747,7 +749,8 @@ MakeBFS <- function(MyMx, Root, SizeOfIndividual) {
             AvLayers <- seq_len(length(MyMx))
             
             while (KeepGoing == TRUE) {
-                MyNeighbors <- names(neighbors(MyMx[[CurrentLayer]], Node)) 
+                MyNeighbors <- 
+                    names(igraph::neighbors(MyMx[[CurrentLayer]], Node)) 
                 MyNeighbors <- MyNeighbors[!MyNeighbors %in% Discovered] 
                 
                 if (length(MyNeighbors) == 0) {
@@ -781,7 +784,7 @@ FilterMultiplex <- function(Multiplex, NodesToKeep) {
     # loop through all the layers to get the corresponding subnetwork 
     for (i in seq_len(length(Multiplex))) {
         # create network with the current layer
-        CurrentNetwork <- induced_subgraph(Multiplex[[i]], NodesToKeep)
+        CurrentNetwork <- igraph::induced_subgraph(Multiplex[[i]], NodesToKeep)
         
         # add subnetwork as a layer into the multiplex network
         FilteredMultiplex[[ length(FilteredMultiplex) + 1 ]] <- CurrentNetwork
@@ -796,7 +799,7 @@ FilterMultiplex <- function(Multiplex, NodesToKeep) {
 #         GlobalNetwork - general network to look for our list of nodes
 # OUTPUT: List of IDs
 GetIDOfNodes <- function(ListOfNodes, GlobalNetwork) {
-    return (which(names(V(GlobalNetwork)) %in% ListOfNodes))
+    return (which(names(igraph::V(GlobalNetwork)) %in% ListOfNodes))
 }
 
 
@@ -818,8 +821,8 @@ Mutation <- function (Individuals, Multiplex, LoadedData) {
         
         if (p <= MutationRate) { # check if mutation is to be performed
             # make subnetwork
-            IndToMutNet <- induced_subgraph(Merged, Individuals[[i]]) 
-            IndToMutDeg <- degree(IndToMutNet) # get nodes' degrees
+            IndToMutNet <- igraph::induced_subgraph(Merged, Individuals[[i]]) 
+            IndToMutDeg <- igraph::degree(IndToMutNet) # get nodes' degrees
             
             # remove DEG from the list
             IndToMutDeg <- 
@@ -868,25 +871,30 @@ MutateNodes <- function(Ind, IndToMutNet, NodesToMutate, PotNodesToMutate,
     
     # if at least one of the nodes will be mutated
     for (j in NodesToMutate) { # loop through the nodes to remove
-        MutatedNetwork <- delete_vertices(IndToMutNet, PotNodesToMutate[j])
+        MutatedNetwork <- 
+            igraph::delete_vertices(IndToMutNet, PotNodesToMutate[j])
         
         # obtain neighbors of nodes
         Neighbors_OrInd <- 
-            names(unlist(lapply(names( V(IndToMutNet)),
-                    function(X) {neighbors(LoadedData$Merged, X)})))
+            names(unlist(lapply(names( igraph::V(IndToMutNet)),
+                    function(X) {igraph::neighbors(LoadedData$Merged, X)})))
         Neighbors_MutInd <- 
-            names(unlist(lapply(names(V(MutatedNetwork)), 
-                function(X) {neighbors(LoadedData$Merged, X)})))
+            names(unlist(lapply(names(igraph::V(MutatedNetwork)), 
+                function(X) {igraph::neighbors(LoadedData$Merged, X)})))
         
         # delete nodes that originally belonged to the individual
         Neighbors_OrInd <- 
-            Neighbors_OrInd[!Neighbors_OrInd %in% names(V(IndToMutNet))]
-        Neighbors_MutInd <-
-            Neighbors_MutInd[!Neighbors_MutInd %in% names(V(IndToMutNet))]
+            Neighbors_OrInd[
+                !Neighbors_OrInd %in% names(igraph::V(IndToMutNet))]
         
-        if( is.connected(MutatedNetwork) ) { # check if network is connected
+        Neighbors_MutInd <-
+            Neighbors_MutInd[
+                !Neighbors_MutInd %in% names(igraph::V(IndToMutNet))]
+        
+        # check if network is connected
+        if( igraph::is.connected(MutatedNetwork) ) { 
             # save changes 
-            Ind <- GetIDOfNodes(names(V(MutatedNetwork)), 
+            Ind <- GetIDOfNodes(names(igraph::V(MutatedNetwork)), 
                                 LoadedData$Multiplex[[1]])
             IndToMutNet <- MutatedNetwork
             AvNeighbors <- Neighbors_MutInd
@@ -915,11 +923,11 @@ AddNode <- function(Ind, IndToMutNet, LoadedData) {
     
     # obtain neighbors of nodes
     AvNeighbors <- 
-        names(unlist(lapply(names(V(IndToMutNet)), 
-            function(X) {neighbors(LoadedData$Merged, X)})))
+        names(unlist(lapply(names(igraph::V(IndToMutNet)), 
+            function(X) {igraph::neighbors(LoadedData$Merged, X)})))
     
     # delete from the list all the nodes that originally belonged to the ind
-    AvNeighbors <- AvNeighbors[ !AvNeighbors %in% names(V(IndToMutNet)) ]
+    AvNeighbors <- AvNeighbors[!AvNeighbors %in% names(igraph::V(IndToMutNet))]
     
     # if there is at least one available neighbor to be added
     if(length(AvNeighbors) > 0) {
@@ -1176,7 +1184,7 @@ SaveFinalPop <- function (BestIndividualsFile, Population, N, Network) {
         Ind <- Population[[i, "Individual"]] # get the individual's code
         
         # get the names of the correponding nodes
-        DecodedInd <- names(V(Network)[Ind])
+        DecodedInd <- names(igraph::V(Network)[Ind])
         
         write(paste(c(DecodedInd, Population[i, c("AverageNodesScore", 
             "Density", "Rank", "CrowdingDistance")]), collapse=" ", sep=""),
@@ -1784,4 +1792,102 @@ CreateActiveModules <- function(d, ExperimentsPath) {
     )
 }
 
+
+# this function is a part of run_mogamun. It is executed if the OS is not 
+# Windows and it allows running MOGAMUN in parallel
+RunInLinux <- function(LoadedData, Cores, NumberOfRunsToExecute, ResultsDir) {
+    doParallel::registerDoParallel(cores = Cores) # in line with the phys. cores
+    PopSize <- LoadedData$PopSize
+    Generations <- LoadedData$Generations
+    Multiplex <- LoadedData$Multiplex
+    ResultsPath <- paste0(ResultsDir, "/Experiment_", Sys.Date(), "/")
+    dir.create(ResultsPath, recursive = TRUE)  # create result folder 
+    BestIndsPath <- paste0(ResultsPath, "MOGAMUN_Results_") # path for res
+    
+    RunNumber <- 1
+    
+    # loop to execute the algorithm many times
+    foreach(RunNumber = seq_len(NumberOfRunsToExecute)) %dopar% {
+        BestIndsFile <- paste0(BestIndsPath, "_Run_", RunNumber, ".txt")
+        MyInitPop <- GenerateInitialPop(PopSize, Multiplex, LoadedData) 
+        FitnessData <- EvaluatePopulation(MyInitPop, Multiplex, LoadedData)
+        Population <- data.frame("Individual" = I(MyInitPop), FitnessData) 
+        
+        # obtain ranking and crowding distances
+        Population <- NonDomSort(
+            PopulationToSort = Population, LoadedData = LoadedData )
+        
+        g <- 1  # initilizes the number of generation
+        StatsGen <- data.frame(matrix(ncol = 3, nrow = 0))
+        colnames(StatsGen) <- 
+            c( "Generation", "BestAverageNodesScore", "BestDensity" )
+        
+        # evolution's loop for g generations or until all inds have rank = 1
+        while (g <= Generations && !all(Population$Rank == 1)) {
+            Population <- MakeNewPopulation(LoadedData, Population) 
+            
+            # add the best values for the two objective functions
+            StatsGen[nrow(StatsGen) + 1, ] <- c(g, 
+                                                max(Population$AverageNodesScore), max(Population$Density))
+            print(paste0("Run ", RunNumber, ". Gen. ", g, " completed"))
+            g <- g + 1 # increments the generation
+        }   
+        # saves data in files
+        write.csv(StatsGen, file = paste0(BestIndsPath,
+                                          "StatisticsPerGeneration_Run", RunNumber, ".csv"), 
+                  row.names = FALSE)
+        SaveFinalPop(BestIndsFile, Population, PopSize, Multiplex[[1]]) 
+        print(paste0("FINISH TIME, RUN ", RunNumber, ": ", Sys.time()))
+        gc()
+    }        
+}
+
+
+# this function is a part of run_mogamun. It is executed if the OS is  
+# Windows and it DOES NOT allow running MOGAMUN in parallel
+RunInWindows <- function(LoadedData, NumberOfRunsToExecute, ResultsDir) {
+    PopSize <- LoadedData$PopSize
+    Generations <- LoadedData$Generations
+    Multiplex <- LoadedData$Multiplex
+    ResultsPath <- paste0(ResultsDir, "/Experiment_", Sys.Date(), "/")
+    dir.create(ResultsPath, recursive = TRUE)  # create result folder 
+    BestIndsPath <- paste0(ResultsPath, "MOGAMUN_Results_") # path for res
+    
+    RunNumber <- 1
+    
+    # loop to execute the algorithm many times
+    for (RunNumber in seq_len(NumberOfRunsToExecute)){
+        BestIndsFile <- paste0(BestIndsPath, "_Run_", RunNumber, ".txt")
+        MyInitPop <- GenerateInitialPop(PopSize, Multiplex, LoadedData) 
+        FitnessData <- EvaluatePopulation(MyInitPop, Multiplex, LoadedData)
+        Population <- data.frame("Individual" = I(MyInitPop), FitnessData) 
+        
+        # obtain ranking and crowding distances
+        Population <- NonDomSort(
+            PopulationToSort = Population, LoadedData = LoadedData )
+        
+        g <- 1  # initilizes the number of generation
+        StatsGen <- data.frame(matrix(ncol = 3, nrow = 0))
+        colnames(StatsGen) <- 
+            c( "Generation", "BestAverageNodesScore", "BestDensity" )
+        
+        # evolution's loop for g generations or until all inds have rank = 1
+        while (g <= Generations && !all(Population$Rank == 1)) {
+            Population <- MakeNewPopulation(LoadedData, Population) 
+            
+            # add the best values for the two objective functions
+            StatsGen[nrow(StatsGen) + 1, ] <- c(g, 
+                                                max(Population$AverageNodesScore), max(Population$Density))
+            print(paste0("Run ", RunNumber, ". Gen. ", g, " completed"))
+            g <- g + 1 # increments the generation
+        }   
+        # saves data in files
+        write.csv(StatsGen, file = paste0(BestIndsPath,
+                                          "StatisticsPerGeneration_Run", RunNumber, ".csv"), 
+                  row.names = FALSE)
+        SaveFinalPop(BestIndsFile, Population, PopSize, Multiplex[[1]]) 
+        print(paste0("FINISH TIME, RUN ", RunNumber, ": ", Sys.time()))
+        gc()
+    }        
+}
 

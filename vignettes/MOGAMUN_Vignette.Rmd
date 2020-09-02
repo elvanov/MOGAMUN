@@ -138,7 +138,8 @@ ready to run MOGAMUN using the `mogamun_run` function, which has 4 parameters:
 * `LoadedData` is the list returned by `mogamun_load_data`
 * `Cores` is an integer that determines the number of cores that will be used 
 to run MOGAMUN. This number must be in line with the number of physical 
-processor cores (*default = 1*). One core is needed per run. 
+processor cores (*default = 1*). One core is needed per run. Please note that 
+the execution in parallel is NOT allowed in Windows.
 * `NumberOfRunsToExecute` is an integer that determines the number of runs to 
 be performed (*default = 1*). If you have enough resources, we strongly 
 recommend to run MOGAMUN 30 times. Please note that if you wish to run MOGAMUN 

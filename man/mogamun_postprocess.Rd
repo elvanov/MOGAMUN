@@ -57,7 +57,7 @@ LoadedData <-
         NetworkLayersDir = LayersPath,
         Layers = "23"
     )
-ResultsDir <- paste0(system.file("SampleResults", package="MOGAMUN"), "/")
+ResultsDir <- system.file("SampleResults", package="MOGAMUN")
 mogamun_run(
     LoadedData = LoadedData,
     Cores = 1,

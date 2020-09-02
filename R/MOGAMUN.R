@@ -50,6 +50,7 @@
 #' @import doParallel igraph stringr RUnit
 #' @importFrom devtools install_github
 #' @importFrom foreach `%dopar%` foreach
+#' @importFrom doParallel registerDoParallel
 #' @importFrom utils write.table read.table combn read.csv write.csv 
 #' @importFrom stats runif qnorm
 #' @importFrom RCy3 cytoscapePing createNetworkFromDataFrames loadTableData 
@@ -205,7 +206,7 @@ mogamun_load_data <- function(EvolutionParameters, DifferentialExpressionPath,
 #'         NetworkLayersDir = LayersPath,
 #'         Layers = "23"
 #'     )
-#' ResultsDir <- paste0(system.file("SampleResults", package="MOGAMUN"), "/")
+#' ResultsDir <- system.file("SampleResults", package="MOGAMUN")
 #' mogamun_run(
 #'     LoadedData = LoadedData,
 #'     Cores = 1,
@@ -215,52 +216,13 @@ mogamun_load_data <- function(EvolutionParameters, DifferentialExpressionPath,
 #' @export
 mogamun_run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
     ResultsDir = '.') {
-    registerDoParallel(cores = Cores) # in line with the no. of physical cores
-    PopSize <- LoadedData$PopSize
-    Generations <- LoadedData$Generations
 
     if (exists("LoadedData")) {
-        Multiplex <- LoadedData$Multiplex
-        ResultsPath <- paste0(ResultsDir, "/Experiment_", Sys.Date(), "/")
-        dir.create(ResultsPath, recursive = TRUE)  # create result folder 
-        BestIndsPath <- paste0(ResultsPath, "MOGAMUN_Results_") # path for res
-        
-        RunNumber <- 1
-        
-        # loop to execute the algorithm many times
-        foreach(RunNumber = seq_len(NumberOfRunsToExecute)) %dopar% {
-            BestIndsFile <- paste0(BestIndsPath, "_Run_", RunNumber, ".txt")
-            MyInitPop <- GenerateInitialPop(PopSize, Multiplex, LoadedData) 
-            FitnessData <- EvaluatePopulation(MyInitPop, Multiplex, LoadedData)
-            Population <- data.frame("Individual" = I(MyInitPop), FitnessData) 
-            
-            # obtain ranking and crowding distances
-            Population <- NonDomSort(
-                PopulationToSort = Population, LoadedData = LoadedData )
-            
-            g <- 1  # initilizes the number of generation
-            StatsGen <- data.frame(matrix(ncol = 3, nrow = 0))
-            colnames(StatsGen) <- 
-                c( "Generation", "BestAverageNodesScore", "BestDensity" )
-            
-            # evolution's loop for g generations or until all inds have rank = 1
-            while (g <= Generations && !all(Population$Rank == 1)) {
-                Population <- MakeNewPopulation(LoadedData, Population) 
-                
-                # add the best values for the two objective functions
-                StatsGen[nrow(StatsGen) + 1, ] <- c(g, 
-                    max(Population$AverageNodesScore), max(Population$Density))
-                print(paste0("Run ", RunNumber, ". Gen. ", g, " completed"))
-                g <- g + 1 # increments the generation
-            }   
-            # saves data in files
-            write.csv(StatsGen, file = paste0(BestIndsPath,
-                "StatisticsPerGeneration_Run", RunNumber, ".csv"), 
-                row.names = FALSE)
-            SaveFinalPop(BestIndsFile, Population, PopSize, Multiplex[[1]]) 
-            print(paste0("FINISH TIME, RUN ", RunNumber, ": ", Sys.time()))
-            gc()
-        }        
+        if (.Platform$OS.type == "windows") {
+            RunInWindows(LoadedData, NumberOfRunsToExecute, ResultsDir)
+        } else {
+            RunInLinux(LoadedData, Cores, NumberOfRunsToExecute, ResultsDir)
+        }
     } else {if (!exists(LoadedData)) {print ("Missing parameter: LoadedData")}}
 }
 
@@ -308,7 +270,7 @@ mogamun_run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
 #'         NetworkLayersDir = LayersPath,
 #'         Layers = "23"
 #'     )
-#' ResultsDir <- paste0(system.file("SampleResults", package="MOGAMUN"), "/")
+#' ResultsDir <- system.file("SampleResults", package="MOGAMUN")
 #' mogamun_run(
 #'     LoadedData = LoadedData,
 #'     Cores = 1,

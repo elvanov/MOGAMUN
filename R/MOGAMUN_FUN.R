@@ -521,7 +521,7 @@ GetParent2 <- function(Parent1, Population, LoadedData) {
     # get inds that contain at least one node from the previous list
     NeighborsIndsP1 <- unlist( vapply( seq_len(PopSize), function(X) { 
         if (length(intersect(unlist(Population[X,"Individual"]), 
-            NeighborsNodesP1)) > 0){ X } }, numeric(1) ) )
+            NeighborsNodesP1)) > 0){ X } else { 0 }}, numeric(1) ) )
     
     # filter population and leave individuals near parent 1
     PotentialIndsParent2 <- Population[NeighborsIndsP1, ]

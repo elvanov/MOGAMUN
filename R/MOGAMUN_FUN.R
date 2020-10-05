@@ -1676,8 +1676,11 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
         
         # read expression data
         DE <- LoadedData$DE_results
-        DE$DEG <- ifelse(abs(DE$logFC) > 1 & DE$FDR < 0.05, TRUE, FALSE)
-        
+        if ("logFC" %in% colnames(DE)) { 
+            DE$DEG <- ifelse(abs(DE$logFC) > 1 & 
+                        DE$FDR < LoadedData$ThresholdDEG, TRUE, FALSE) 
+        } else {DE$DEG <- ifelse(DE$FDR < LoadedData$ThresholdDEG, TRUE, FALSE)}
+
         # remove rows without gene name and filter columns
         DE <- DE[!is.na(DE$gene), ]
         
@@ -1686,7 +1689,7 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
             table.key.column = "name", namespace = "default", network = d)
         
         # adds nodes' color and borders
-        FormatNodesAndEdges(Network, d, LoadedData) 
+        FormatNodesAndEdges(Network, d, LoadedData, DE) 
         
         # creates the subnetworks corresponding the active modules
         CreateActiveModules(d, ExpPath)
@@ -1707,15 +1710,9 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
 #         d - Directory containing the results of one experiment
 #         LoadedData - list containing several important variables 
 #                      (see mogamun_load_data())
+#         DE - differential expression results
 # OUTPUT: None
-FormatNodesAndEdges <- function(Network, d, LoadedData) {
-    # read expression data
-    DE <- LoadedData$DE_results
-    DE$DEG <- ifelse(abs(DE$logFC) > 1 & DE$FDR < 0.05, TRUE, FALSE)
-    
-    # remove rows without gene name and filter columns
-    DE <- DE[!is.na(DE$gene), ]
-    
+FormatNodesAndEdges <- function(Network, d, LoadedData, DE) {
     numberOfLayers <- length(LoadedData$DensityPerLayerMultiplex)
     
     # if there are 3 layers, use the same edges' colors as in the paper
@@ -1733,13 +1730,15 @@ FormatNodesAndEdges <- function(Network, d, LoadedData) {
     setEdgeColorMapping(table.column = "interaction", mapping.type = "d",
         table.column.values = unique(Network$interaction), colors = edgesColors)
     
-    # set nodes' colors according to the logFC, from green (downregulated) 
-    # to white and then to red (upregulated)
-    setNodeColorMapping(table.column = "logFC",
-        table.column.values = c(min(DE$logFC), 0.0, max(DE$logFC)),
-        colors = c("#009933", "#FFFFFF", "#FF0000"), mapping.type = "c", 
-        style.name = "default", network = d)
-    
+    if ("logFC" %in% colnames(DE)) {
+        # set nodes' colors according to the logFC, from green (downregulated) 
+        # to white and then to red (upregulated)
+        setNodeColorMapping(
+            table.column = "logFC", table.column.values = c(min(DE$logFC), 
+            0.0, max(DE$logFC)), colors = c("#009933", "#FFFFFF", "#FF0000"), 
+            mapping.type = "c", style.name = "default", network = d)        
+    }
+
     setNodeBorderColorMapping(table.column = "name", colors = "#000000",
         mapping.type = "d", style.name = "default", default.color = "#000000",
         network = d)

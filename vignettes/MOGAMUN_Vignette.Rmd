@@ -218,6 +218,10 @@ will be the set of subnetworks in the first Pareto front. Otherwise, the result
 will be the accumulated Pareto front, as we already explained. 
 
 ```{r end, echo = FALSE}
-# unlink(paste0("./Experiment_", Sys.Date()), recursive = TRUE)
+mogamun_postprocess(
+  LoadedData = loadedData, 
+  ExperimentDir = '.', 
+  VisualizeInCytoscape = FALSE
+)
 ```
 

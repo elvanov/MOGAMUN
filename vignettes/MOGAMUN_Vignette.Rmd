@@ -222,7 +222,7 @@ runs. If the experiment to be postprocessed contains a single run, the result
 will be the set of subnetworks in the first Pareto front. Otherwise, the result 
 will be the accumulated Pareto front, as we already explained. 
 
-```{r end, echo = FALSE}
+```{r end, echo = TRUE}
 mogamun_postprocess(
   LoadedData = loadedData, 
   ExperimentDir = '.', 

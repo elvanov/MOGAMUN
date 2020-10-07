@@ -15,7 +15,6 @@ install_github("elvanov/MOGAMUN")
 library(MOGAMUN)
 ```
 
-
 # Introduction 
 This document describes the use of MOGAMUN, the type and format of the input 
 data, and the post-processing and visualization of the output data. MOGAMUN is 
@@ -33,8 +32,12 @@ parameters, providing input data and running the algorithm.
 
 ## Initialization of parameters 
 We set here the values for the evolution parameters and other general 
-parameters, such as the minimum and maximun sizes of the subnetworks, via 
-`mogamun_init`. In total, there are 11 customizable parameters: 
+parameters, such as the minimum and maximum sizes of the subnetworks, via 
+`mogamun_init`. Please note that we strongly recommend to run the algorithm
+with the default values. The only exception is for `MinSize` and `MaxSize`, 
+which you can adapt to get bigger or smaller subnetworks, knowing that MOGAMUN
+tends to give as result subnetworks of sizes near or equal to `MinSize`. 
+In total, there are 11 customizable parameters: 
 
 * `PopSize` is an integer that determines the size of the population 
 (*default = 100*).
@@ -195,7 +198,9 @@ that are included in the result. The nodes will be colored according to their
 *logFC* value, where green stands for downregulated, red means upregulated, and 
 white means no deregulation. Nodes corresponding to significantly 
 differentially expressed genes will have black border, and the color of the 
-edges will be different for each layer of the multiplex network. 
+edges will be different for each layer of the multiplex network. To check the 
+layer an edge corresponds to, click on the edge and check the value of the 
+`TypeOfInteraction`, in the edge table. 
 
 The postprocessing is done with the function `mogamun_postprocess`, which has 
 4 parameters:  

@@ -1792,101 +1792,47 @@ CreateActiveModules <- function(d, ExperimentsPath) {
 }
 
 
-# this function is a part of run_mogamun. It is executed if the OS is not 
-# Windows and it allows running MOGAMUN in parallel
-RunInLinux <- function(LoadedData, Cores, NumberOfRunsToExecute, ResultsDir) {
-    doParallel::registerDoParallel(cores = Cores) # in line with the phys. cores
-    PopSize <- LoadedData$PopSize
-    Generations <- LoadedData$Generations
-    Multiplex <- LoadedData$Multiplex
-    ResultsPath <- paste0(ResultsDir, "/Experiment_", Sys.Date(), "/")
-    dir.create(ResultsPath, recursive = TRUE)  # create result folder 
-    BestIndsPath <- paste0(ResultsPath, "MOGAMUN_Results_") # path for res
+# defines the function of the body of MOGAMUN 
+MogamunBody <- function(RunNumber, LoadedData, BestIndsPath) {
+    BestIndsFile <- paste0(BestIndsPath, "_Run_", RunNumber, ".txt")
+    MyInitPop <- 
+        GenerateInitialPop(LoadedData$PopSize, LoadedData$Multiplex, LoadedData) 
+    FitnessData <- 
+        EvaluatePopulation(MyInitPop, LoadedData$Multiplex, LoadedData)
+    Population <- data.frame("Individual" = I(MyInitPop), FitnessData) 
     
-    RunNumber <- 1
+    # obtain ranking and crowding distances
+    Population <- NonDomSort(
+        PopulationToSort = Population, LoadedData = LoadedData )
     
-    # loop to execute the algorithm many times
-    foreach(RunNumber = seq_len(NumberOfRunsToExecute)) %dopar% {
-        BestIndsFile <- paste0(BestIndsPath, "_Run_", RunNumber, ".txt")
-        MyInitPop <- GenerateInitialPop(PopSize, Multiplex, LoadedData) 
-        FitnessData <- EvaluatePopulation(MyInitPop, Multiplex, LoadedData)
-        Population <- data.frame("Individual" = I(MyInitPop), FitnessData) 
+    g <- 1  # initilizes the number of generation
+    StatsGen <- data.frame(matrix(ncol = 3, nrow = 0))
+    colnames(StatsGen) <- 
+        c( "Generation", "BestAverageNodesScore", "BestDensity" )
+    
+    # evolution's loop for g generations or until all inds have rank = 1
+    while (g <= LoadedData$Generations && !all(Population$Rank == 1)) {
+        Population <- MakeNewPopulation(LoadedData, Population) 
         
-        # obtain ranking and crowding distances
-        Population <- NonDomSort(
-            PopulationToSort = Population, LoadedData = LoadedData )
-        
-        g <- 1  # initilizes the number of generation
-        StatsGen <- data.frame(matrix(ncol = 3, nrow = 0))
-        colnames(StatsGen) <- 
-            c( "Generation", "BestAverageNodesScore", "BestDensity" )
-        
-        # evolution's loop for g generations or until all inds have rank = 1
-        while (g <= Generations && !all(Population$Rank == 1)) {
-            Population <- MakeNewPopulation(LoadedData, Population) 
-            
-            # add the best values for the two objective functions
-            StatsGen[nrow(StatsGen) + 1, ] <- c(g, 
-                                                max(Population$AverageNodesScore), max(Population$Density))
-            print(paste0("Run ", RunNumber, ". Gen. ", g, " completed"))
-            g <- g + 1 # increments the generation
-        }   
-        # saves data in files
-        write.csv(StatsGen, file = paste0(BestIndsPath,
-                                          "StatisticsPerGeneration_Run", RunNumber, ".csv"), 
-                  row.names = FALSE)
-        SaveFinalPop(BestIndsFile, Population, PopSize, Multiplex[[1]]) 
-        print(paste0("FINISH TIME, RUN ", RunNumber, ": ", Sys.time()))
-        gc()
-    }        
+        # add the best values for the two objective functions
+        StatsGen[nrow(StatsGen) + 1, ] <- 
+            c(g, max(Population$AverageNodesScore), max(Population$Density))
+        print(paste0("Run ", RunNumber, ". Gen. ", g, " completed"))
+        g <- g + 1 # increments the generation
+    }   
+    # saves data in files
+    write.csv(
+        StatsGen, 
+        file = paste0(BestIndsPath,"StatisticsPerGeneration_Run", RunNumber, 
+                ".csv"), 
+        row.names = FALSE
+    )
+    SaveFinalPop(
+        BestIndsFile, Population, LoadedData$PopSize, LoadedData$Multiplex[[1]]
+    ) 
+    print(paste0("FINISH TIME, RUN ", RunNumber, ": ", Sys.time()))
+    gc()
 }
 
 
-# this function is a part of run_mogamun. It is executed if the OS is  
-# Windows and it DOES NOT allow running MOGAMUN in parallel
-RunInWindows <- function(LoadedData, NumberOfRunsToExecute, ResultsDir) {
-    PopSize <- LoadedData$PopSize
-    Generations <- LoadedData$Generations
-    Multiplex <- LoadedData$Multiplex
-    ResultsPath <- paste0(ResultsDir, "/Experiment_", Sys.Date(), "/")
-    dir.create(ResultsPath, recursive = TRUE)  # create result folder 
-    BestIndsPath <- paste0(ResultsPath, "MOGAMUN_Results_") # path for res
-    
-    RunNumber <- 1
-    
-    # loop to execute the algorithm many times
-    for (RunNumber in seq_len(NumberOfRunsToExecute)){
-        BestIndsFile <- paste0(BestIndsPath, "_Run_", RunNumber, ".txt")
-        MyInitPop <- GenerateInitialPop(PopSize, Multiplex, LoadedData) 
-        FitnessData <- EvaluatePopulation(MyInitPop, Multiplex, LoadedData)
-        Population <- data.frame("Individual" = I(MyInitPop), FitnessData) 
-        
-        # obtain ranking and crowding distances
-        Population <- NonDomSort(
-            PopulationToSort = Population, LoadedData = LoadedData )
-        
-        g <- 1  # initilizes the number of generation
-        StatsGen <- data.frame(matrix(ncol = 3, nrow = 0))
-        colnames(StatsGen) <- 
-            c( "Generation", "BestAverageNodesScore", "BestDensity" )
-        
-        # evolution's loop for g generations or until all inds have rank = 1
-        while (g <= Generations && !all(Population$Rank == 1)) {
-            Population <- MakeNewPopulation(LoadedData, Population) 
-            
-            # add the best values for the two objective functions
-            StatsGen[nrow(StatsGen) + 1, ] <- c(g, 
-                                                max(Population$AverageNodesScore), max(Population$Density))
-            print(paste0("Run ", RunNumber, ". Gen. ", g, " completed"))
-            g <- g + 1 # increments the generation
-        }   
-        # saves data in files
-        write.csv(StatsGen, file = paste0(BestIndsPath,
-                                          "StatisticsPerGeneration_Run", RunNumber, ".csv"), 
-                  row.names = FALSE)
-        SaveFinalPop(BestIndsFile, Population, PopSize, Multiplex[[1]]) 
-        print(paste0("FINISH TIME, RUN ", RunNumber, ": ", Sys.time()))
-        gc()
-    }        
-}
 

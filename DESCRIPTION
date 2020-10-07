@@ -14,8 +14,8 @@ Description: MOGAMUN is a multi-objective genetic algorithm that identifies
 License: GPL-3
 Encoding: UTF-8
 LazyData: TRUE
-Depends: doParallel (>= 1.0.0), igraph (>= 1.2.0.0)
-Imports: stats, utils, foreach, RCy3, stringr, graphics, grDevices,
+Depends: BiocParallel (>= 1.22.0), igraph (>= 1.2.0.0)
+Imports: stats, utils, RCy3, stringr, graphics, grDevices,
     devtools, RUnit
 Suggests: BiocStyle, knitr, rmarkdown
 biocViews: SystemsBiology, GraphAndNetwork, DifferentialExpression,

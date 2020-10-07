@@ -53,9 +53,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          Rscript -e "install.packages(c('BiocManager', 'remotes', 'stringr', 'knitr', 'rmarkdown', 'devtools', 'RUnit'))"
+          Rscript -e "install.packages(c('BiocManager', 'remotes', 'stringr', 'knitr', 'rmarkdown', 'devtools', 'RUnit', 'igraph', 'rcmdcheck'))"
           Rscript -e "BiocManager::install(version = 'devel', ask = FALSE, update = FALSE)"
-          Rscript -e "BiocManager::install(c('rcmdcheck', 'igraph', 'RCy3', 'BiocStyle', 'BiocParallel'), version = 'devel', ask = FALSE, update = FALSE)"
+          Rscript -e "BiocManager::install(c('RCy3', 'BiocStyle', 'BiocParallel'), version = 'devel', ask = FALSE, update = FALSE)"
 
       - name: Non-windows check
         if: ${{ matrix.config.os != 'windows-latest' }}

@@ -47,10 +47,9 @@
 #'     )
 #'
 #' @export
-#' @import doParallel igraph stringr RUnit
+#' @import igraph stringr RUnit
+#' @importFrom BiocParallel bplapply
 #' @importFrom devtools install_github
-#' @importFrom foreach `%dopar%` foreach
-#' @importFrom doParallel registerDoParallel
 #' @importFrom utils write.table read.table combn read.csv write.csv 
 #' @importFrom stats runif qnorm
 #' @importFrom RCy3 cytoscapePing createNetworkFromDataFrames loadTableData 
@@ -66,7 +65,7 @@ mogamun_init <- function(Generations = 500, PopSize = 100,
     TournamentSize = 2, Measure = "FDR", ThresholdDEG = 0.05,
     MaxNumberOfAttempts = 3) {
 
-    pkgname <- c("doParallel", "igraph", "stringr")
+    pkgname <- c("BiocParallel", "igraph", "stringr")
     
     for (p in pkgname) {
         require(p, quietly = TRUE, character.only = TRUE) || 
@@ -216,13 +215,15 @@ mogamun_load_data <- function(EvolutionParameters, DifferentialExpressionPath,
 #' @export
 mogamun_run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
     ResultsDir = '.') {
-
     if (exists("LoadedData")) {
-        if (.Platform$OS.type == "windows") {
-            RunInWindows(LoadedData, NumberOfRunsToExecute, ResultsDir)
-        } else {
-            RunInLinux(LoadedData, Cores, NumberOfRunsToExecute, ResultsDir)
-        }
+        ResultsPath <- paste0(ResultsDir, "/Experiment_", Sys.Date(), "/")
+        dir.create(ResultsPath, recursive = TRUE)  # create result folder 
+        BestIndsPath <- paste0(ResultsPath, "MOGAMUN_Results_") # path for res
+        
+        BiocParallel::bplapply(
+            seq_len(NumberOfRunsToExecute), MogamunBody, 
+            LoadedData = LoadedData, BestIndsPath = BestIndsPath
+        )
     } else {if (!exists(LoadedData)) {print ("Missing parameter: LoadedData")}}
 }
 

@@ -10,8 +10,8 @@ vignette: >
 ---
 
 ```{r setup, echo = FALSE, include=FALSE}
-library(devtools)
-install_github("elvanov/MOGAMUN")
+#library(devtools)
+#install_github("elvanov/MOGAMUN")
 library(MOGAMUN)
 ```
 

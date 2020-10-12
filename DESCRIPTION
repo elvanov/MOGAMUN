@@ -1,8 +1,8 @@
 Package: MOGAMUN
 Type: Package
-Title: MOGAMUN ' A Multi-Objective Genetic Algorithm to Find Active Modules
+Title: MOGAMUN: A Multi-Objective Genetic Algorithm to Find Active Modules
     in Multiplex Biological Networks
-Version: 0.99.4
+Version: 0.99.5
 Authors@R:
     person("Elva-María", "Novoa-del-Toro", role=c("aut", "cre"),
     email="elva.novoa@inserm.fr", comment=c(ORCID = "0000-0002-6135-5839"))

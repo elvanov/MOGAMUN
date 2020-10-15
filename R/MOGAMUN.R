@@ -48,8 +48,8 @@
 #'
 #' @export
 #' @import igraph stringr RUnit
+#' @importFrom nsga2R fastNonDominatedSorting
 #' @importFrom BiocParallel bplapply
-#' @importFrom devtools install_github
 #' @importFrom utils write.table read.table combn read.csv write.csv 
 #' @importFrom stats runif qnorm
 #' @importFrom RCy3 cytoscapePing createNetworkFromDataFrames loadTableData 
@@ -65,13 +65,6 @@ mogamun_init <- function(Generations = 500, PopSize = 100,
     TournamentSize = 2, Measure = "FDR", ThresholdDEG = 0.05,
     MaxNumberOfAttempts = 3) {
 
-    pkgname <- c("BiocParallel", "igraph", "stringr")
-    
-    for (p in pkgname) {
-        require(p, quietly = TRUE, character.only = TRUE) || 
-            stop("Package '", p, "' not found")
-    }
-    
     # determines the parameters that will be used for the evolution
     EvolutionParameters <- list(
         Generations = Generations, 
@@ -137,7 +130,7 @@ mogamun_load_data <- function(EvolutionParameters, DifferentialExpressionPath,
     NodesScoresPath <- NodesScoresPath # full path to the nodes score
     NetworkLayersDir <- NetworkLayersDir # folder containing the networks 
     LayersToUse <- Layers # layers to use to build the multiplex
-    DE_results <- data.frame(read.csv(DifferentialExpressionPath)) # load DE
+    DE_results <- read.csv(DifferentialExpressionPath) # load DE
     DE_results <- RemoveDuplicates_DE_Results(DE_results) # remove dup entries
     DEG <- DE_results[DE_results$FDR < ThresholdDEG, ] # get list of DEG
     
@@ -158,13 +151,12 @@ mogamun_load_data <- function(EvolutionParameters, DifferentialExpressionPath,
             "nodescore" = NodesScores)
         write.csv(GenesWithNS, file = NodesScoresPath, row.names = FALSE)
     } else {
-        GenesWithNS <- 
-            data.frame(read.csv(NodesScoresPath, stringsAsFactors = FALSE))
+        GenesWithNS <- read.csv(NodesScoresPath, stringsAsFactors = FALSE)
     }
     
     Multiplex <- GenerateMultiplexNetwork(Files) # make the multiplex network
     Merged <- GenerateMergedNetwork(Files, Multiplex) # make the merged network 
-    DensityPerLayerMultiplex <- unlist(lapply(Multiplex, graph.density)) # dens
+    DensityPerLayerMultiplex <- vapply(Multiplex, graph.density, numeric(1)) 
     
     LoadedData <- c(EvolutionParameters, list(
         NetworkLayersDir = NetworkLayersDir, Layers = Layers, 

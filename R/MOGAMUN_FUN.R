@@ -36,8 +36,7 @@ GenerateMultiplexNetwork <- function(Files) {
     # loop through all the layers to get the corresponding subnetwork 
     for (LayerFile in Files) {
         # load layer
-        Layer <- data.frame(read.table(LayerFile, header = FALSE, 
-                    stringsAsFactors = FALSE))
+        Layer <- read.table(LayerFile, header = FALSE, stringsAsFactors = FALSE)
         
         # create network with the current layer
         # NOTE. All the nodes will have the same ID in every layer
@@ -90,8 +89,7 @@ GetListOfAllNodesPresentInLayers <- function(Files) {
     # loop through all the layers to get the corresponding subnetwork 
     for (LayerFile in Files) {
         # load layer
-        Layer <- data.frame(read.table(LayerFile, header = FALSE, 
-            stringsAsFactors = FALSE))
+        Layer <- read.table(LayerFile, header = FALSE, stringsAsFactors = FALSE)
         
         AllNodes <- c(AllNodes, unique(union(Layer[, 1], Layer[, 2])))
     }
@@ -398,54 +396,6 @@ EvaluateInd <- function (Individual, MultiplexNetwork, LoadedData) {
 }
 
 
-############## FUNCTION FROM PACKAGE nsga2R ##################
-# definition of the function to sort by non-domination a whole population
-# INPUTS: inputData - data frame (contains the individuals' objective functions)
-# OUTPUT: Rank of the population
-fastNonDomSorting <-   function(inputData) {
-    popSize = nrow(inputData)
-    idxDominators = vector("list", popSize)
-    idxDominatees = vector("list", popSize)
-    for (i in seq_len(popSize-1)) {
-        for (j in (i+1):popSize) {
-            xi = inputData[i, ]
-            xj = inputData[j, ]
-            if (all(xi >= xj) && any(xi > xj)) {  ## i dominates j
-                idxDominators[[j]] = c(idxDominators[[j]], i)
-                idxDominatees[[i]] = c(idxDominatees[[i]], j)
-            } else if (all(xj >= xi) && any(xj > xi)) {  ## j dominates i
-                idxDominators[[i]] = c(idxDominators[[i]], j)
-                idxDominatees[[j]] = c(idxDominatees[[j]], i)
-            }
-        }
-    }
-    noDominators <- lapply(idxDominators,length);
-    rnkList <- list();
-    rnkList <- c(rnkList,list(which(noDominators==0)));
-    solAssigned <- c();
-    solAssigned <- c(solAssigned,length(which(noDominators==0)));
-    while (sum(solAssigned) < popSize) {
-        Q <- c();
-        noSolInCurrFrnt <- solAssigned[length(solAssigned)];
-        for (i in seq_len(noSolInCurrFrnt)) {
-            solIdx <- rnkList[[length(rnkList)]][i];
-            hisDominatees <- idxDominatees[[solIdx]]; # A vector
-            for (i in hisDominatees) {
-                noDominators[[i]] <- noDominators[[i]] - 1;
-                if (noDominators[[i]] == 0) {
-                    Q <- c(Q, i);
-                }
-            }
-        }
-        rnkList <- c(rnkList,list(sort(Q))); # sort Q before concatenating
-        solAssigned <- c(solAssigned,length(Q));
-    }
-    
-    return(rnkList)
-}
-
-
-
 # definition of the function to generate a new population from an existing one
 # INPUTS: LoadedData - general data 
 #         Population - full population of individuals (parents)
@@ -519,9 +469,9 @@ GetParent2 <- function(Parent1, Population, LoadedData) {
     NeighborsNodesP1 <- GetNeighbors(NodesIDsOfParent1, Multiplex )
     
     # get inds that contain at least one node from the previous list
-    NeighborsIndsP1 <- unlist( vapply( seq_len(PopSize), function(X) { 
+    NeighborsIndsP1 <- vapply( seq_len(PopSize), function(X) { 
         if (length(intersect(unlist(Population[X,"Individual"]), 
-            NeighborsNodesP1)) > 0){ X } }, numeric(1) ) )
+            NeighborsNodesP1)) > 0){ X } else { 0 }}, numeric(1) )
     
     # filter population and leave individuals near parent 1
     PotentialIndsParent2 <- Population[NeighborsIndsP1, ]
@@ -836,8 +786,8 @@ Mutation <- function (Individuals, Multiplex, LoadedData) {
             
             # make vector with the nodes to mutate
             NodesToMutate <- 
-                apply(array(rep(0, length(PotNodesToMutate))), 1, function(X) { 
-                    ifelse(runif(1, 0, 1) <= MutationRate, 1, 0)})
+                vapply(array(rep(0, length(PotNodesToMutate))), function(X) { 
+                    ifelse(runif(1, 0, 1) <= MutationRate, 1, 0)}, numeric(1))
             
             # gets the list of chromosomes to be mutated
             NodesToMutate <- which(NodesToMutate == 1) 
@@ -1103,7 +1053,7 @@ NonDomSort <- function(PopulationToSort, LoadedData) {
     ObjectiveNames <- LoadedData$ObjectiveNames
     
     # sort individuals by non domination
-    Ranking <- fastNonDomSorting(
+    Ranking <- nsga2R::fastNonDominatedSorting(
         PopulationToSort[, (colnames(PopulationToSort) %in% ObjectiveNames)] )
     
     # transform the output of the sorting into a matrix of 2 columns: 
@@ -1119,9 +1069,9 @@ NonDomSort <- function(PopulationToSort, LoadedData) {
     PopulationToSort$Rank <- MyResult[, 2]
     
     # calculate (MAX - MIN) of every objective function
-    Range <- apply(PopulationToSort[, (colnames(PopulationToSort) %in% 
-        ObjectiveNames)], 2, max) - apply(PopulationToSort[, 
-        (colnames(PopulationToSort) %in% ObjectiveNames)], 2, min)
+    Range <- vapply(PopulationToSort[, (colnames(PopulationToSort) %in% 
+        ObjectiveNames)], max, numeric(1)) - vapply(PopulationToSort[, 
+        (colnames(PopulationToSort) %in% ObjectiveNames)], min, numeric(1))
     
     # create a matrix removing the ind codes and the crowding distances
     PopulationMatrix <- as.matrix(PopulationToSort[ , 
@@ -1500,8 +1450,8 @@ FilterNetworks <- function(ExperimentsPath, LoadedData, AccPF) {
     # loop through all the files
     for (i in seq_len(length(myDataFiles))) {
         # get data
-        data <- data.frame(read.table(paste0(ExperimentsPath, myDataFiles[i]), 
-            header = TRUE))
+        data <- read.table(paste0(ExperimentsPath, myDataFiles[i]), 
+            header = TRUE)
         
         # add it to the list
         myFullListOfInteractions <- rbind(myFullListOfInteractions, data)
@@ -1676,8 +1626,11 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
         
         # read expression data
         DE <- LoadedData$DE_results
-        DE$DEG <- ifelse(abs(DE$logFC) > 1 & DE$FDR < 0.05, TRUE, FALSE)
-        
+        if ("logFC" %in% colnames(DE)) { 
+            DE$DEG <- ifelse(abs(DE$logFC) > 1 & 
+                        DE$FDR < LoadedData$ThresholdDEG, TRUE, FALSE) 
+        } else {DE$DEG <- ifelse(DE$FDR < LoadedData$ThresholdDEG, TRUE, FALSE)}
+
         # remove rows without gene name and filter columns
         DE <- DE[!is.na(DE$gene), ]
         
@@ -1686,7 +1639,7 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
             table.key.column = "name", namespace = "default", network = d)
         
         # adds nodes' color and borders
-        FormatNodesAndEdges(Network, d, LoadedData) 
+        FormatNodesAndEdges(Network, d, LoadedData, DE) 
         
         # creates the subnetworks corresponding the active modules
         CreateActiveModules(d, ExpPath)
@@ -1707,15 +1660,9 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
 #         d - Directory containing the results of one experiment
 #         LoadedData - list containing several important variables 
 #                      (see mogamun_load_data())
+#         DE - differential expression results
 # OUTPUT: None
-FormatNodesAndEdges <- function(Network, d, LoadedData) {
-    # read expression data
-    DE <- LoadedData$DE_results
-    DE$DEG <- ifelse(abs(DE$logFC) > 1 & DE$FDR < 0.05, TRUE, FALSE)
-    
-    # remove rows without gene name and filter columns
-    DE <- DE[!is.na(DE$gene), ]
-    
+FormatNodesAndEdges <- function(Network, d, LoadedData, DE) {
     numberOfLayers <- length(LoadedData$DensityPerLayerMultiplex)
     
     # if there are 3 layers, use the same edges' colors as in the paper
@@ -1733,13 +1680,15 @@ FormatNodesAndEdges <- function(Network, d, LoadedData) {
     setEdgeColorMapping(table.column = "interaction", mapping.type = "d",
         table.column.values = unique(Network$interaction), colors = edgesColors)
     
-    # set nodes' colors according to the logFC, from green (downregulated) 
-    # to white and then to red (upregulated)
-    setNodeColorMapping(table.column = "logFC",
-        table.column.values = c(min(DE$logFC), 0.0, max(DE$logFC)),
-        colors = c("#009933", "#FFFFFF", "#FF0000"), mapping.type = "c", 
-        style.name = "default", network = d)
-    
+    if ("logFC" %in% colnames(DE)) {
+        # set nodes' colors according to the logFC, from green (downregulated) 
+        # to white and then to red (upregulated)
+        setNodeColorMapping(
+            table.column = "logFC", table.column.values = c(min(DE$logFC), 
+            0.0, max(DE$logFC)), colors = c("#009933", "#FFFFFF", "#FF0000"), 
+            mapping.type = "c", style.name = "default", network = d)        
+    }
+
     setNodeBorderColorMapping(table.column = "name", colors = "#000000",
         mapping.type = "d", style.name = "default", default.color = "#000000",
         network = d)
@@ -1767,8 +1716,8 @@ CreateActiveModules <- function(d, ExperimentsPath) {
     
     # load data for active modules
     ActiveModules <- 
-        data.frame(read.csv(paste0(ExperimentsPath, list.files(ExperimentsPath,
-            pattern = "A_AccPF_CYTOSCAPE_JacSimT_"))))
+        read.csv(paste0(ExperimentsPath, list.files(ExperimentsPath,
+            pattern = "A_AccPF_CYTOSCAPE_JacSimT_")))
     
     # load active modules data in cytoscape
     loadTableData(data = ActiveModules, data.key.column = "Nodes_Names",
@@ -1825,7 +1774,7 @@ MogamunBody <- function(RunNumber, LoadedData, BestIndsPath) {
     write.csv(
         StatsGen, 
         file = paste0(BestIndsPath,"StatisticsPerGeneration_Run", RunNumber, 
-                      ".csv"), 
+                ".csv"), 
         row.names = FALSE
     )
     SaveFinalPop(
@@ -1834,5 +1783,6 @@ MogamunBody <- function(RunNumber, LoadedData, BestIndsPath) {
     print(paste0("FINISH TIME, RUN ", RunNumber, ": ", Sys.time()))
     gc()
 }
+
 
 

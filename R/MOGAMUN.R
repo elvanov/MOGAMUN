@@ -49,7 +49,7 @@
 #' @export
 #' @import igraph stringr RUnit
 #' @importFrom nsga2R fastNonDominatedSorting
-#' @importFrom BiocParallel bplapply
+#' @importFrom BiocParallel bplapply MulticoreParam
 #' @importFrom utils write.table read.table combn read.csv write.csv 
 #' @importFrom stats runif qnorm
 #' @importFrom RCy3 cytoscapePing createNetworkFromDataFrames loadTableData 
@@ -214,7 +214,8 @@ mogamun_run <- function(LoadedData, Cores = 1, NumberOfRunsToExecute = 1,
 
         BiocParallel::bplapply(
             seq_len(NumberOfRunsToExecute), MogamunBody, 
-            LoadedData = LoadedData, BestIndsPath = BestIndsPath
+            LoadedData = LoadedData, BestIndsPath = BestIndsPath, 
+            BPPARAM = BiocParallel::MulticoreParam(workers = Cores)
         )
     } else {if (!exists(LoadedData)) {print ("Missing parameter: LoadedData")}}
 }

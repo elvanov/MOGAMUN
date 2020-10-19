@@ -1628,18 +1628,16 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
         DE <- LoadedData$DE_results
         if ("logFC" %in% colnames(DE)) { 
             DE$DEG <- ifelse(abs(DE$logFC) > 1 & 
-                        DE$FDR < LoadedData$ThresholdDEG, TRUE, FALSE) 
+                DE$FDR < LoadedData$ThresholdDEG, TRUE, FALSE) 
         } else {DE$DEG <- ifelse(DE$FDR < LoadedData$ThresholdDEG, TRUE, FALSE)}
 
-        # remove rows without gene name and filter columns
-        DE <- DE[!is.na(DE$gene), ]
+        DE <- DE[!is.na(DE$gene), ] # remove rows with no gene name
         
         # load expression data in cytoscape
         loadTableData(data = DE, data.key.column = "gene", table = "node",
             table.key.column = "name", namespace = "default", network = d)
         
-        # adds nodes' color and borders
-        FormatNodesAndEdges(Network, d, LoadedData, DE) 
+        FormatNodesAndEdges(Network, d, LoadedData, DE) # add colors and borders
         
         # creates the subnetworks corresponding the active modules
         CreateActiveModules(d, ExpPath)
@@ -1745,8 +1743,8 @@ CreateActiveModules <- function(d, ExperimentsPath) {
 # defines the function of the body of MOGAMUN 
 MogamunBody <- function(RunNumber, LoadedData, BestIndsPath) {
     BestIndsFile <- paste0(BestIndsPath, "_Run_", RunNumber, ".txt")
-    MyInitPop <- 
-        GenerateInitialPop(LoadedData$PopSize, LoadedData$Multiplex, LoadedData) 
+    MyInitPop <- GenerateInitialPop(
+        LoadedData$PopSize, LoadedData$Multiplex, LoadedData) 
     FitnessData <- 
         EvaluatePopulation(MyInitPop, LoadedData$Multiplex, LoadedData)
     Population <- data.frame("Individual" = I(MyInitPop), FitnessData) 

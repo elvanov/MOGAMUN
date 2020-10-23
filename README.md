@@ -1,4 +1,5 @@
-# MOGAMUN
+![MOGAMUN](mogamun.png)
+
 MOGAMUN is a Multi Objective Genetic Algorithm to find active modules 
 (i.e., highly connected subnetworks with an overall deregulation) in MUltiplex 
 biological Networks. For a detailed description of MOGAMUN check out the preprint 

@@ -53,7 +53,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          Rscript -e "install.packages(c('BiocManager', 'remotes', 'stringr', 'knitr', 'rmarkdown', 'devtools', 'RUnit', 'igraph', 'rcmdcheck', 'nsga2R'))"
+          Rscript -e "install.packages(c('BiocManager', 'remotes', 'stringr', 'knitr', 'rmarkdown', 'devtools', 'RUnit', 'igraph', 'rcmdcheck', 'nsga2R', 'stringi', 'lintr'))"
           Rscript -e "BiocManager::install(version = "3.12", ask = FALSE, update = FALSE)"
           Rscript -e "BiocManager::install(c('RCy3', 'BiocStyle', 'BiocParallel'), ask = FALSE, update = FALSE)"
 

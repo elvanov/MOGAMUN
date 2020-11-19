@@ -40,7 +40,7 @@ jobs:
         if: ${{ matrix.config.os == 'ubuntu-20.04' }}
         run: |
           sudo apt-get update
-          sudo apt-get install libcurl4-openssl-dev libglpk40
+          sudo apt-get install libssl-dev libcurl4-openssl-dev libglpk40 libxml2-dev r-cran-xml
           
       - uses: actions/checkout@v1
           

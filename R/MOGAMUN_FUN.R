@@ -1742,6 +1742,7 @@ CreateActiveModules <- function(d, ExperimentsPath) {
 
 # defines the function of the body of MOGAMUN 
 MogamunBody <- function(RunNumber, LoadedData, BestIndsPath) {
+    sink(NULL, type = "output")
     BestIndsFile <- paste0(BestIndsPath, "_Run_", RunNumber, ".txt")
     MyInitPop <- GenerateInitialPop(
         LoadedData$PopSize, LoadedData$Multiplex, LoadedData) 
@@ -1781,6 +1782,3 @@ MogamunBody <- function(RunNumber, LoadedData, BestIndsPath) {
     print(paste0("FINISH TIME, RUN ", RunNumber, ": ", Sys.time()))
     gc()
 }
-
-
-

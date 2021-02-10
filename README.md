@@ -82,7 +82,7 @@ analysis. Please note that such file must be composed of at least two columns:
 "gene" and `Measure`. The column "gene" must contain **gene names** and the 
 column `Measure` must be called either "FDR" or "PValue" (depending on which of 
 the two was seleced in `mogamun_init`) and it should contain the results of the 
-statistical test. We strongly recommend to have a third columm ("logFC") with 
+statistical test. We strongly recommend to have a third column ("logFC") with 
 the $log_2(fold\_change)$, i.e. the ratio of difference of the expression 
 between the two groups under study (e.g. patients vs control). There is a 
 sample file in *MOGAMUN/extdata/DE/Sample_DE.csv*.
@@ -94,7 +94,8 @@ that contains the networks that will compose the multiplex network. Please note
 that each biological network must be in a separate file with 2-column 
 **tab separated** format. The name of each file must start with a different 
 character, which will be used in the `Layers` parameter. There are two example 
-files in *MOGAMUN/extdata/LayersMultiplex*.
+files in *MOGAMUN/extdata/LayersMultiplex*. Please note that these files do not
+contain full networks.
 * `Layers` is a string composed of a chain of characters that determine which 
 files from the `NetworkLayersDir` are to be used to build the multiplex network 
 (e.g. "123" to use the networks which names start with "1", "2", and "3").

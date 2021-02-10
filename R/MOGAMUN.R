@@ -141,31 +141,36 @@ mogamun_load_data <- function(EvolutionParameters, DifferentialExpressionPath,
     Files <- list.files(NetworkLayersDir, pattern = 
                 paste0("^[", LayersToUse, "]_"), full.names = TRUE)
     
-    if ( ! file.exists(NodesScoresPath) ) { # if no nodes scores file exists
-        # calculate the nodes scores for all the genes in DE analysis results
-        NodesScores <- as.numeric(GetNodesScoresOfListOfGenes(DE_results, 
-            as.character(DE_results$gene), Measure))
-        
-        # data frame of genes and scores. NOTE. Genes not in the list have 0
-        GenesWithNS <- data.frame("gene" = as.character(DE_results$gene), 
-            "nodescore" = NodesScores)
-        write.csv(GenesWithNS, file = NodesScoresPath, row.names = FALSE)
+    if (length(Files) < nchar(LayersToUse)) {
+        print(paste0("Error! One or more networks are missing from ", 
+            NetworkLayersDir))
     } else {
-        GenesWithNS <- read.csv(NodesScoresPath, stringsAsFactors = FALSE)
+        if ( ! file.exists(NodesScoresPath) ) { # if no nodes scores file exists
+            # calculate the nodes scores for all the genes in DE analysis results
+            NodesScores <- as.numeric(GetNodesScoresOfListOfGenes(DE_results, 
+                                                                  as.character(DE_results$gene), Measure))
+            
+            # data frame of genes and scores. NOTE. Genes not in the list have 0
+            GenesWithNS <- data.frame("gene" = as.character(DE_results$gene), 
+                                      "nodescore" = NodesScores)
+            write.csv(GenesWithNS, file = NodesScoresPath, row.names = FALSE)
+        } else {
+            GenesWithNS <- read.csv(NodesScoresPath, stringsAsFactors = FALSE)
+        }
+        
+        Multiplex <- GenerateMultiplexNetwork(Files) # make the multiplex network
+        Merged <- GenerateMergedNetwork(Files, Multiplex) # make the merged network 
+        DensityPerLayerMultiplex <- vapply(Multiplex, graph.density, numeric(1)) 
+        
+        LoadedData <- c(EvolutionParameters, list(
+            NetworkLayersDir = NetworkLayersDir, Layers = Layers, 
+            DE_results = DE_results, DEG = DEG, GenesWithNodesScores = GenesWithNS,
+            Multiplex = Multiplex, 
+            DensityPerLayerMultiplex = DensityPerLayerMultiplex,
+            Merged = Merged))
+        
+        return (LoadedData)
     }
-    
-    Multiplex <- GenerateMultiplexNetwork(Files) # make the multiplex network
-    Merged <- GenerateMergedNetwork(Files, Multiplex) # make the merged network 
-    DensityPerLayerMultiplex <- vapply(Multiplex, graph.density, numeric(1)) 
-    
-    LoadedData <- c(EvolutionParameters, list(
-        NetworkLayersDir = NetworkLayersDir, Layers = Layers, 
-        DE_results = DE_results, DEG = DEG, GenesWithNodesScores = GenesWithNS,
-        Multiplex = Multiplex, 
-        DensityPerLayerMultiplex = DensityPerLayerMultiplex,
-        Merged = Merged))
-    
-    return (LoadedData)
 }
 
 #' @title mogamun_run

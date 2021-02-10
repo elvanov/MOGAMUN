@@ -95,7 +95,7 @@ that each biological network must be in a separate file with 2-column
 **tab separated** format. The name of each file must start with a different 
 character, which will be used in the `Layers` parameter. There are two example 
 files in *MOGAMUN/extdata/LayersMultiplex*. Please note that these files do not
-contain full networks.
+contain full networks and they are only provided to test the algorithm.
 * `Layers` is a string composed of a chain of characters that determine which 
 files from the `NetworkLayersDir` are to be used to build the multiplex network 
 (e.g. "123" to use the networks which names start with "1", "2", and "3").

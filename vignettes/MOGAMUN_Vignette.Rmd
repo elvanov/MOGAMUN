@@ -23,6 +23,10 @@ https://www.biorxiv.org/content/10.1101/2020.05.25.114215v1. All the expression
 datasets and networks that we used to obtain the results reported in our 
 preprint are available in the GitHub repository 
 https://github.com/elvanov/MOGAMUN-data.  
+IMPORTANT. Please note that there was a bug in the non-domination sorting process.
+All the runs executed between October 15th, 2020 and February 12th, 2021 must be
+re-executed. We apologize for the inconveniences. 
+
 
 # Workflow
 The workflow of MOGAMUN is composed of 3 main steps: initialization of 

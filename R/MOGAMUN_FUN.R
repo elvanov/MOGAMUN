@@ -996,7 +996,7 @@ ReplaceDuplicatedInds <- function(CombinedPopulation, LoadedData) {
                 print(SortedPop[c(Ind1_ID, Ind2_ID), ])
             } else { # tournament between the two individuals
                 IndToKeep <- TournamentSelection(TournamentSize = 2,
-                    TournPop <- SortedPop[c(Ind1_ID, Ind2_ID), ])
+                    TournPop = SortedPop[c(Ind1_ID, Ind2_ID), ])
                 IndsToRemove <- c(IndsToRemove, ifelse(rownames(IndToKeep) == 
                     row.names(SortedPop)[Ind1_ID], Ind2_ID, Ind1_ID)) 
                 
@@ -1008,7 +1008,8 @@ ReplaceDuplicatedInds <- function(CombinedPopulation, LoadedData) {
             i <- i + 1
         }
         # remove the corresponding individuals
-        DivPop<-DivPop[!row.names(DivPop) %in% row.names(DivPop)[IndsToRemove],]
+        DivPop <- SortedPop[!row.names(SortedPop) %in% 
+            row.names(SortedPop)[IndsToRemove], ]
     }
     # generate as many new individuals as duplicated ones
     NewInds <- GenerateInitialPop(
@@ -1044,6 +1045,57 @@ GetDuplicatedInds <- function(DivPop, Threshold) {
     return(Sim)
 }
 
+
+# definition of the function that performs the fast non dominated sorting 
+# NOTE. This function was taken from the nsga2R package, and adapted for 
+#       maximization problems
+# INPUTS:  inputData - Unsorted population
+# OUTPUT:  Sorted population with ranking 
+fastNonDominatedSorting <- function(inputData) {
+    popSize <- nrow(inputData)
+    idxDominators <- vector("list", popSize)
+    idxDominatees <- vector("list", popSize)
+    for (i in 1:(popSize - 1)) {
+        for (j in i:popSize) {
+            if (i != j) {
+                xi <- inputData[i, ]
+                xj <- inputData[j, ]
+                if (all(xi >= xj) && any(xi > xj)) {
+                    idxDominators[[j]] <- c(idxDominators[[j]], i)
+                    idxDominatees[[i]] <- c(idxDominatees[[i]], j)
+                }
+                else if (all(xj >= xi) && any(xj > xi)) {
+                    idxDominators[[i]] <- c(idxDominators[[i]], j)
+                    idxDominatees[[j]] <- c(idxDominatees[[j]], i)
+                }
+            }
+        }
+    }
+    noDominators <- lapply(idxDominators, length)
+    rnkList <- list()
+    rnkList <- c(rnkList, list(which(noDominators == 0)))
+    solAssigned <- c()
+    solAssigned <- c(solAssigned, length(which(noDominators == 0)))
+    while (sum(solAssigned) < popSize) {
+        Q <- c()
+        noSolInCurrFrnt <- solAssigned[length(solAssigned)]
+        for (i in 1:noSolInCurrFrnt) {
+            solIdx <- rnkList[[length(rnkList)]][i]
+            hisDominatees <- idxDominatees[[solIdx]]
+            for (i in hisDominatees) {
+                noDominators[[i]] <- noDominators[[i]] - 1
+                if (noDominators[[i]] == 0) {
+                    Q <- c(Q, i)
+                }
+            }
+        }
+        rnkList <- c(rnkList, list(sort(Q)))
+        solAssigned <- c(solAssigned, length(Q))
+    }
+    return(rnkList)
+}
+
+
 # definition of the function that performs the fast non dominated sorting and 
 # the calculus of the crowding distance
 # INPUTS:  PopulationToSort - Unsorted population
@@ -1053,7 +1105,7 @@ NonDomSort <- function(PopulationToSort, LoadedData) {
     ObjectiveNames <- LoadedData$ObjectiveNames
     
     # sort individuals by non domination
-    Ranking <- nsga2R::fastNonDominatedSorting(
+    Ranking <- fastNonDominatedSorting(
         PopulationToSort[, (colnames(PopulationToSort) %in% ObjectiveNames)] )
     
     # transform the output of the sorting into a matrix of 2 columns: 

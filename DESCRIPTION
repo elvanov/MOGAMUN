@@ -2,7 +2,7 @@ Package: MOGAMUN
 Type: Package
 Title: MOGAMUN: A Multi-Objective Genetic Algorithm to Find Active Modules
     in Multiplex Biological Networks
-Version: 1.1.4
+Version: 1.1.5
 Authors@R:
     person("Elva-María", "Novoa-del-Toro", role=c("aut", "cre"),
     email="elvanov@hotmail.com", comment=c(ORCID = "0000-0002-6135-5839"))
@@ -14,7 +14,7 @@ Description: MOGAMUN is a multi-objective genetic algorithm that identifies
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: TRUE
-Imports: stats, utils, RCy3, stringr, graphics, grDevices, RUnit, nsga2R,
+Imports: stats, utils, RCy3, stringr, graphics, grDevices, RUnit,
     BiocParallel, igraph
 Suggests: BiocStyle, knitr, rmarkdown
 biocViews: SystemsBiology, GraphAndNetwork, DifferentialExpression,

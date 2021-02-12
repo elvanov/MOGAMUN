@@ -48,7 +48,6 @@
 #'
 #' @export
 #' @import igraph stringr RUnit
-#' @importFrom nsga2R fastNonDominatedSorting
 #' @importFrom BiocParallel bplapply MulticoreParam
 #' @importFrom utils write.table read.table combn read.csv write.csv 
 #' @importFrom stats runif qnorm

@@ -779,7 +779,7 @@ Mutation <- function (Individuals, Multiplex, LoadedData) {
                 IndToMutDeg[ !names(IndToMutDeg) %in% as.character(DEG$gene) ]
             
             # get the list of nodes with the min degree (peripheral nodes)
-            PeripheralNodes <- which.min(IndToMutDeg)
+            PeripheralNodes <- IndToMutDeg[IndToMutDeg == min(IndToMutDeg)]
             
             # get the list of node names that can be mutated
             PotNodesToMutate <- names(PeripheralNodes)
@@ -797,9 +797,11 @@ Mutation <- function (Individuals, Multiplex, LoadedData) {
                 Individuals[[i]] <- 
                     MutateNodes(Individuals[[i]], IndToMutNet,  NodesToMutate, 
                                 PotNodesToMutate, LoadedData) 
-            } else { # if no nodes were removed, add a new neighbor
-                Individuals[[i]] <- 
-                    AddNode(Individuals[[i]], IndToMutNet, LoadedData) 
+            } else { # if no nodes were removed, add node if max size allows it
+                if (length(Individuals[[i]]) < LoadedData$MaxSize) {
+                    Individuals[[i]] <- 
+                        AddNode(Individuals[[i]], IndToMutNet, LoadedData) 
+                }
             }
         }
         Mutants[i] <- Individuals[i] # save the individual in the mutants' list
@@ -912,7 +914,7 @@ GetNodeToAdd <- function(AvNeighbors, LoadedData) {
     Incidences <- table(as.factor(AvNeighbors)) 
     
     # get the nodes with highest incidence
-    MaxIncidences <- which.max(Incidences) 
+    MaxIncidences <- Incidences[Incidences == max(Incidences)]
     
     # keep nodes with a max incidence
     AvNeighbors <- names(MaxIncidences) 

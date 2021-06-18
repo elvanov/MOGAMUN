@@ -779,7 +779,7 @@ Mutation <- function (Individuals, Multiplex, LoadedData) {
                 IndToMutDeg[ !names(IndToMutDeg) %in% as.character(DEG$gene) ]
             
             # get the list of nodes with the min degree (peripheral nodes)
-            PeripheralNodes <- which.min(IndToMutDeg)
+            PeripheralNodes <- IndToMutDeg[IndToMutDeg == min(IndToMutDeg)]
             
             # get the list of node names that can be mutated
             PotNodesToMutate <- names(PeripheralNodes)

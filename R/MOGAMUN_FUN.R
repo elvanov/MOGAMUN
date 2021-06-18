@@ -797,9 +797,11 @@ Mutation <- function (Individuals, Multiplex, LoadedData) {
                 Individuals[[i]] <- 
                     MutateNodes(Individuals[[i]], IndToMutNet,  NodesToMutate, 
                                 PotNodesToMutate, LoadedData) 
-            } else { # if no nodes were removed, add a new neighbor
-                Individuals[[i]] <- 
-                    AddNode(Individuals[[i]], IndToMutNet, LoadedData) 
+            } else { # if no nodes were removed, add node if max size allows it
+                if (length(Individuals[[i]]) < LoadedData$MaxSize) {
+                    Individuals[[i]] <- 
+                        AddNode(Individuals[[i]], IndToMutNet, LoadedData) 
+                }
             }
         }
         Mutants[i] <- Individuals[i] # save the individual in the mutants' list
@@ -841,8 +843,8 @@ MutateNodes <- function(Ind, IndToMutNet, NodesToMutate, PotNodesToMutate,
             Neighbors_MutInd[
                 !Neighbors_MutInd %in% names(igraph::V(IndToMutNet))]
         
-        # check if network is connected
-        if( igraph::is.connected(MutatedNetwork) ) { 
+        # check if network is connected and there are available neighbors to add
+        if(igraph::is.connected(MutatedNetwork) & length(Neighbors_MutInd) > 0){ 
             # save changes 
             Ind <- GetIDOfNodes(names(igraph::V(MutatedNetwork)), 
                                 LoadedData$Multiplex[[1]])
@@ -851,13 +853,16 @@ MutateNodes <- function(Ind, IndToMutNet, NodesToMutate, PotNodesToMutate,
         } else { AvNeighbors <- Neighbors_OrInd }
         
         # if there is at least 1 available neighbor to be added 
-        if(length(AvNeighbors) > 0) {
+        if(length(AvNeighbors) > 0 & length(Ind) < LoadedData$MaxSize) {
             # pick a node to add
             NewNodeID <- GetNodeToAdd(AvNeighbors, LoadedData) 
             
-            # add node
+            # add node to list and to network
             Ind <- c(Ind, NewNodeID) 
-        } else { print("Attempt to add a new neighbor FAILED") }
+            IndToMutNet <- igraph::induced_subgraph(LoadedData$Merged, Ind) 
+        } else { 
+            print("Attempt to add a new neighbor FAILED. Rolling back mutation")
+        }
     }
     return(Ind)
 }
@@ -912,7 +917,7 @@ GetNodeToAdd <- function(AvNeighbors, LoadedData) {
     Incidences <- table(as.factor(AvNeighbors)) 
     
     # get the nodes with highest incidence
-    MaxIncidences <- which.max(Incidences) 
+    MaxIncidences <- Incidences[Incidences == max(Incidences)]
     
     # keep nodes with a max incidence
     AvNeighbors <- names(MaxIncidences) 

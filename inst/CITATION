@@ -11,20 +11,21 @@ citEntry(
             as.person("Elva-María Novoa-del-Toro"),
             as.person("Efrén Mezura-Montes"), 
             as.person("Matthieu Vignes"),
+            as.person("Morgane Térézol"),
             as.person("Frédérique Magdinier,"),
             as.person("Laurent Tichit"),
             as.person("Anaïs Baudot")
         ),
-    year = "2020",
+    year = "2021",
     note = 
         paste(
-            "Preprint available in",
-            "https://www.biorxiv.org/content/10.1101/2020.05.25.114215v1"),
+            "Manuscript available in",
+            "https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009263"),
     textVersion =
-        paste("Elva-María Novoa-del-Toro, Efrén Mezura-Montes, Matthieu Vignes, Frédérique Magdinier, Laurent Tichit, and Anaïs Baudot:", 
+        paste("Elva-María Novoa-del-Toro, Efrén Mezura-Montes, Matthieu Vignes, Morgane Térézol, Frédérique Magdinier, Laurent Tichit, and Anaïs Baudot:", 
             "A Multi-Objective Genetic Algorithm to Find Active Modules in",
             "Multiplex Biological Networks.",
-            "https://www.biorxiv.org/content/10.1101/2020.05.25.114215v1",
-            "(2020).", sep = " "
+            "https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009263",
+            "(2021).", sep = " "
         )
 )

@@ -16,7 +16,7 @@ Encoding: UTF-8
 LazyData: TRUE
 Imports: stats, utils, RCy3, stringr, graphics, grDevices, RUnit,
     BiocParallel, igraph
-Suggests: BiocStyle, knitr, rmarkdown, markdown
+Suggests: BiocStyle, knitr, rmarkdown
 biocViews: SystemsBiology, GraphAndNetwork, DifferentialExpression,
     BiomedicalInformatics, Transcriptomics, Clustering, Network
 URL: https://github.com/elvanov/MOGAMUN

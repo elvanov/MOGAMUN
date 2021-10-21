@@ -2,14 +2,11 @@
 
 MOGAMUN is a Multi Objective Genetic Algorithm to find active modules 
 (i.e., highly connected subnetworks with an overall deregulation) in MUltiplex 
-biological Networks. For a detailed description of MOGAMUN check out the preprint 
-https://www.biorxiv.org/content/10.1101/2020.05.25.114215v1. All the expression 
-datasets and networks that we used to obtain the results reported in our 
-preprint are available in the GitHub repository 
+biological Networks. For a detailed description of MOGAMUN check out our paper 
+https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009263. 
+All the expression datasets and networks that we used to obtain the results 
+reported in our paper are available in the GitHub repository 
 https://github.com/elvanov/MOGAMUN-data.  
-IMPORTANT. Please note that there was a bug in the non-domination sorting process.
-All the runs executed between October 15th, 2020 and February 12th, 2021 must be
-re-executed. We apologize for the inconveniences. 
 
 ## Workflow
 The workflow of MOGAMUN is composed of 3 main steps: initialization of 
@@ -160,7 +157,7 @@ are those with rank = 1.
 
 
 ## Postprocessing of the results
-In our preprint (https://www.biorxiv.org/content/10.1101/2020.05.25.114215v1), 
+In our paper (https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009263),
 we ran MOGAMUN 30 times for each experiment. This increases the chances to find 
 the global maxima. Given that the result of every run is the set of subnetworks 
 with rank = 1, if you execute MOGAMUN multiple times the final result is the 

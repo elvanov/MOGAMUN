@@ -1783,6 +1783,10 @@ CreateActiveModules <- function(d, ExperimentsPath) {
     lapply( 
         colnames(ActiveModules)[grep("Ind", colnames(ActiveModules))], 
         function(am){ 
+            # switch to the main network
+            setCurrentNetwork(network = d)
+
+            # select the nodes corresponding to the current subnetwork
             createColumnFilter(filter.name = "ActiveModules",  column = am,  
                 criterion = am, predicate = "IS", type = "node", network = d)
                                 

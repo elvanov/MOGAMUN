@@ -1683,10 +1683,22 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
         
         # read expression data
         DE <- LoadedData$DE_results
-        if ("logFC" %in% colnames(DE)) { 
-            DE$DEG <- ifelse(abs(DE$logFC) > 1 & 
-                DE$FDR < LoadedData$ThresholdDEG, TRUE, FALSE) 
-        } else {DE$DEG <- ifelse(DE$FDR < LoadedData$ThresholdDEG, TRUE, FALSE)}
+        if ("logFC" %in% colnames(DE)) {
+            DE$DEG <-
+                ifelse(
+                  abs(DE$logFC) > 1 & 
+                    DE[[LoadedData$Measure]] < LoadedData$ThresholdDEG, 
+                  TRUE, 
+                  FALSE
+                )
+        } else {
+          DE$DEG <- 
+            ifelse(
+              DE[[LoadedData$Measure]] < LoadedData$ThresholdDEG, 
+              TRUE, 
+              FALSE
+            )
+        }
 
         DE <- DE[!is.na(DE$gene), ] # remove rows with no gene name
         

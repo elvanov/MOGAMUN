@@ -1559,54 +1559,73 @@ GetSimilarInds <- function(DiversePop, Threshold) {
 #         Threshold - subnetworks over this Jaccard similarity are merged 
 # OUTPUT: None
 JoinSimilarInds <- function(AccPF, LoadedData, Threshold) {
-    MaxSize <- LoadedData$MaxSize
-    DiversePop <- AccPF # save a copy of the accumulated Pareto front
-    
-    # flag to deactivate when no individuals-pair fulfill the threshold
-    KeepGoing <- TRUE
-    
-    # loop to join similar individuals
-    while(KeepGoing == TRUE) {
-        if (nrow(DiversePop) > 1) { # verify that there individuals left
-            # get "similar"duplicated" individuals
-            Sim <-  GetSimilarInds(DiversePop, Threshold) 
+
+  MaxSize <- LoadedData$MaxSize
+  DiversePop <- AccPF # save a copy of the accumulated Pareto front
+  
+  # flag to deactivate when no individuals-pair fulfill the threshold
+  KeepGoing <- TRUE
+  
+  # loop to join similar individuals
+  while(KeepGoing == TRUE) {
+    if (nrow(DiversePop) > 1) { # verify that there individuals left
+      # get "similar"duplicated" individuals
+      Sim <- GetSimilarInds(DiversePop, Threshold) 
+      
+      if (nrow(Sim) > 0) { # if there are duplicated inds
+        IndsToRemove <- NULL
+        AlreadyMerged <- integer(0)
+        i <- 1
+        
+        # sort the pairs of individuals according to their similarities
+        Sim <- Sim[order(Sim$JS, decreasing = TRUE), ]
+        
+        rownames(Sim) <- seq_len(nrow(Sim))
+        
+        while(i <= nrow(Sim)) { # loop through duplicated inds
+          ID1 <- Sim[i, 1]
+          ID2 <- Sim[i, 2]
+          
+          if (!ID1 %in% AlreadyMerged & !ID2 %in% AlreadyMerged) {
+            IndsUnion <- 
+              union(DiversePop$Individual[[ID1]], DiversePop$Individual[[ID2]])
             
-            if (nrow(Sim) > 0) { # if there are duplicated inds
-                IndsToRemove <- NULL
-                i <- 1
-                while(i <= nrow(Sim)) { # loop through duplicated inds
-                    ID1 <- Sim[i, 1]
-                    ID2 <- Sim[i, 2]
-                    IndsUnion <- union(DiversePop$Individual[[ID1]], 
-                        DiversePop$Individual[[ID2]])
-                    
-                    # verify that union of individuals respects the max size
-                    if (length(IndsUnion) <= MaxSize) {
-                        DiversePop$Individual[[ID1]] <- IndsUnion # 
-                        IndsToRemove <- c(IndsToRemove, ID2) 
-                        
-                        # get all future incidences to joined individuals 
-                        Ref <- 
-                            union(which(Sim == ID1, arr.ind = TRUE)[, "row"], 
-                                which(Sim == ID2, arr.ind = TRUE)[, "row"])
-                        
-                        # check and remove future incidences to joined inds
-                        Ref <- Ref[Ref > i]
-                        Sim <- Sim[!row.names(Sim) %in% row.names(Sim)[Ref], ]
-                    } else {print("Union of individuals overpasses max size")}
-                    i <- i + 1
-                }
-                if (is.null(IndsToRemove)) { # verify if no ind will be removed
-                    KeepGoing <- FALSE
-                } else {
-                    # remove the individuals that were joined with another one
-                    DiversePop <- DiversePop[!row.names(DiversePop) %in% 
-                        row.names(DiversePop)[IndsToRemove], ]
-                }
-            } else { KeepGoing <- FALSE }
-        } else { KeepGoing <- FALSE }
+            # verify that union of individuals respects the max size
+            if (length(IndsUnion) <= MaxSize) {
+              DiversePop$Individual[[ID1]] <- IndsUnion # 
+              IndsToRemove <- c(IndsToRemove, ID2) 
+              AlreadyMerged <- c(AlreadyMerged, ID1, ID2)
+              
+              # # get all future incidences to joined individuals 
+              # Ref <- 
+              #   union(which(Sim == ID1, arr.ind = TRUE)[, "row"], 
+              #         which(Sim == ID2, arr.ind = TRUE)[, "row"])
+              # 
+              # # check and remove future incidences to joined inds
+              # Ref <- Ref[Ref > i]
+              # Sim <- Sim[!row.names(Sim) %in% row.names(Sim)[Ref], ]
+            } else {print("Union of individuals overpasses max size")}
+          }
+          
+          i <- i + 1
+        }
+        if (is.null(IndsToRemove)) { # verify if no ind will be removed
+          KeepGoing <- FALSE
+        } else {
+          # remove the individuals that were joined with another one
+          DiversePop <- 
+            DiversePop[
+              !row.names(DiversePop) %in% row.names(DiversePop)[IndsToRemove], 
+            ]
+        }
+      } else { 
+        KeepGoing <- FALSE 
+      }
+    } else { 
+      KeepGoing <- FALSE 
     }
-    return(DiversePop)
+  }
+  return(DiversePop)
 }
 
 

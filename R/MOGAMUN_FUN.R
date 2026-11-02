@@ -1682,6 +1682,13 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
     # get list of directories. Each directory contains the results of one exp
     Dirs <- list.dirs(GeneralPath, recursive = FALSE, full.names = FALSE)
     Dirs <- Dirs[grep("Experiment", Dirs)]
+
+    pathParts <- strsplit(GeneralPath, "/")[[1]]
+    experimentName <- 
+      paste0(
+        gsub("/", "_", sub(".*MOGAMUN/", "", GeneralPath)),
+        "_JS_", LoadedData$JaccardSimilarityThreshold
+      )
     
     for (d in Dirs) { # loop through all the experiments
         ExpPath <- paste0(GeneralPath, "/", d, "/")
@@ -1697,11 +1704,12 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
         # get list of nodes
         Nodes <- data.frame(id = unique(c(Network$source, Network$target)))
         
-        # generate network in cytoscape
-        createNetworkFromDataFrames(Nodes, Network, title = d)
+        # generate network in Cytoscape
+        RCy3::createNetworkFromDataFrames(Nodes, Network, title = experimentName)
         
         # read expression data
         DE <- LoadedData$DE_results
+        
         if ("logFC" %in% colnames(DE)) {
             DE$DEG <-
                 ifelse(

@@ -1731,18 +1731,18 @@ CytoscapeVisualization <- function(ExperimentDir, LoadedData) {
         
         # load expression data in cytoscape
         loadTableData(data = DE, data.key.column = "gene", table = "node",
-            table.key.column = "name", namespace = "default", network = d)
+            table.key.column = "name", namespace = "default", network = experimentName)
         
-        FormatNodesAndEdges(Network, d, LoadedData, DE) # add colors and borders
+        FormatNodesAndEdges(Network, experimentName, LoadedData, DE) # add colors and borders
         
         # creates the subnetworks corresponding the active modules
-        CreateActiveModules(d, ExpPath)
+        CreateActiveModules(experimentName, ExpPath)
         
         # verify if there are more exp to analyze to leave last one open
         if (which(Dirs == d) < length(Dirs)) {
             closeSession(save.before.closing = TRUE, 
-                filename = paste0(ExpPath, "A_Acc_PF_", d))
-        } else { saveSession(filename = paste0(ExpPath, "A_Acc_PF_", d)) }
+                filename = paste0(ExpPath, "A_Acc_PF_", experimentName))
+        } else { saveSession(filename = paste0(ExpPath, "A_Acc_PF_", experimentName)) }
     }
 }
 
